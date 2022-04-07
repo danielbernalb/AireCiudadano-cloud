@@ -111,17 +111,17 @@ data:
         }
 
         location ~ ^/(panel|live|kiosk)  {
-            rewrite ^(.*)$ https://$host?kiosk break;
+            rewrite ^(.*)$ http://$host?kiosk break;
         }
 
         location ~ ^/(sensor|device|dispositivo|medidor|view|unidad|unit) {
-            rewrite /(.*)/(.*)/(.*) https://$host/d/lastvalue?var-uid=$2&var-name=$3&kiosk  break;
-            rewrite /(.*)/(.*) https://$host/d/lastvalue?var-uid=$2&kiosk  break;
+            rewrite /(.*)/(.*)/(.*) http://$host/d/lastvalue?var-uid=$2&var-name=$3&kiosk  break;
+            rewrite /(.*)/(.*) http://$host/d/lastvalue?var-uid=$2&kiosk  break;
         }
 
         location ~ ^/(admin|detalle|detail|edit|editor) {
-            rewrite /(.*)/(.*)/(.*) https://$host/d/lastvalue?var-uid=$2&var-name=$3  break;
-            rewrite /(.*)/(.*) https://$host/d/lastvalue?var-uid=$2  break;
+            rewrite /(.*)/(.*)/(.*) http://$host/d/lastvalue?var-uid=$2&var-name=$3  break;
+            rewrite /(.*)/(.*) http://$host/d/lastvalue?var-uid=$2  break;
         }
 
         #error_page  404              /404.html;
@@ -136,12 +136,12 @@ data:
     {{- if eq .Values.tls true }}
     server {
         if ($host = {{ .Values.publicIP }}) {
-            return 301 https://$host$request_uri;
+            return 301 http://$host$request_uri;
         } # managed by Certbot
 
         {{- if .Values.secondaryPublicIP }}
         if ($host = {{ .Values.secondaryPublicIP }}) {
-            return 301 https://$host$request_uri;
+            return 301 http://$host$request_uri;
         } # managed by Certbot
         {{- end }}
 

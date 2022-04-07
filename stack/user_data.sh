@@ -35,9 +35,9 @@ echo "alias helm='microk8s.helm3'" >> $HOME/.bashrc
 
 #================Install anaire cloud stack=================
 cd $HOME
-git clone --branch cambios1servidorHetzner https://github.com/danielbernalb/anaire-cloud.git
+git clone --branch cambios1servHetTLSfalse https://github.com/danielbernalb/anaire-cloud.git
 ln -s anaire-cloud/stack/virtualbox/delete_stack.sh
 ln -s anaire-cloud/stack/virtualbox/upgrade_stack.sh
 ln -s anaire-cloud/stack/virtualbox/start_stack.sh
-sudo microk8s.helm3 install --set tls=true --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD anairestack anaire-cloud/stack/anairecloud
+sudo microk8s.helm3 install --set tls=false --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD anairestack anaire-cloud/stack/anairecloud
 #===========================================================
