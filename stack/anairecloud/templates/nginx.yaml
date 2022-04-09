@@ -27,6 +27,8 @@ spec:
             {{- if eq .Values.tls true }}
             - name: nginx-run
               mountPath: /scripts
+            - name: nginx-ssl
+              mountPath: /scripts
             {{- end }}
           resources:
             {{- toYaml .Values.resources.nginx | nindent 12 }}
@@ -59,6 +61,9 @@ spec:
           configMap:
             name: nginx-run
             defaultMode: 0777
+        - name: nginx-ssl
+          configMap:
+            name: nginx-ssl
         {{- end }}
         - name: nginx-configmap
           configMap:
@@ -80,6 +85,21 @@ data:
 kind: ConfigMap
 apiVersion: v1
 metadata:
+  name: nginx-ssl
+data:
+  options-ssl-nginx.conf: |
+    ssl_session_cache shared:le_nginx_SSL:10m;
+    ssl_session_timeout 1440m;
+    ssl_session_tickets off;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
   name: nginx-configmap
 data:
   default.conf: |
@@ -93,7 +113,7 @@ data:
         listen 443 ssl; # managed by Certbot
         ssl_certificate /etc/letsencrypt/live/{{ .Values.publicIP }}/fullchain.pem; # managed by Certbot
         ssl_certificate_key /etc/letsencrypt/live/{{ .Values.publicIP }}/privkey.pem; # managed by Certbot
-        curl -L https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > /etc/letsencrypt/options-ssl-nginx.conf
+        /scripts/options-ssl-nginx.conf > /etc/letsencrypt/options-ssl-nginx.conf
         include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
         ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
         {{- else }}
