@@ -28,7 +28,7 @@ spec:
             - name: nginx-run
               mountPath: /scripts
             - name: nginx-ssl
-              mountPath: /scripts
+              mountPath: /scripts2
             {{- end }}
           resources:
             {{- toYaml .Values.resources.nginx | nindent 12 }}
@@ -113,7 +113,7 @@ data:
         listen 443 ssl; # managed by Certbot
         ssl_certificate /etc/letsencrypt/live/{{ .Values.publicIP }}/fullchain.pem; # managed by Certbot
         ssl_certificate_key /etc/letsencrypt/live/{{ .Values.publicIP }}/privkey.pem; # managed by Certbot
-        /scripts/options-ssl-nginx.conf > /etc/letsencrypt/options-ssl-nginx.conf
+        /scripts2/options-ssl-nginx.conf > /etc/letsencrypt/options-ssl-nginx.conf
         include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
         ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
         {{- else }}
