@@ -6,7 +6,7 @@ sudo apt update && sudo apt install -y jq unzip git snapd
 
 #====================VARIABLES==============================
 #export PUBLIC_IP=ip a l enp0s3 | awk '($1=="inet"){split($2,a,"/");print a[1]}'
-export PUBLIC_IP=aireciudadano.com
+export PUBLIC_IP=192.163.2.103
 export GRAFANA_ADMIN_PASSWORD="daniel2022"
 #===========================================================
 
