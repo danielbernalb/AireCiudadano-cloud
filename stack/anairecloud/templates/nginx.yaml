@@ -135,14 +135,14 @@ data:
     }
     {{- if eq .Values.tls true }}
     stream {
-          upstream mqtt_cluster{
-	            server 88.99.187.134:30183;
-	            }
+      upstream mqtt_cluster {
+      server 88.99.187.134:30183;
+      }
     server {
         listen 80;
-	      proxy_pass mqtt_cluster;
+        proxy_pass mqtt_cluster;
         server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
         return 404; # managed by Certbot
-	      }
+        }
       }
     {{- end }}
