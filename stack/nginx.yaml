@@ -66,7 +66,30 @@ data:
         listen  [::]:80;
         server_name  ${PUBLIC_IP};
 
+        root /var/www/wordpress;
+        index index.php;
+
         location / {
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        location ~ \.php$ {
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        }
+
+    listen 1443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/aireciudadano.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/aireciudadano.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+        location ~ \.php$ {
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        }
+
+        location /sensor {
             proxy_pass http://grafana;
             proxy_redirect     off;
             proxy_set_header   Host \$host;
