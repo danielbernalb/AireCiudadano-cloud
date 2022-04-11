@@ -102,6 +102,15 @@ data:
 
         server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
 
+        location / {
+            rewrite ^/route/?(.*)$ /$1 break;
+            proxy_pass  {{ .Values.publicIP }}:1443;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+        
+
         location /sensor/ {
             proxy_pass http://grafana;
             proxy_redirect     off;
@@ -131,30 +140,6 @@ data:
         error_page   500 502 503 504  /50x.html;
         location = /50x.html {
             root   /usr/share/nginx/html;
-        }
-    }
-
-    server {
-        {{- if eq .Values.tls true }}
-        listen [::]:1443 ssl ipv6only=on; # managed by Certbot
-        listen 1443 ssl; # managed by Certbot
-        ssl_certificate /etc/letsencrypt/live/{{ .Values.publicIP }}/fullchain.pem; # managed by Certbot
-        ssl_certificate_key /etc/letsencrypt/live/{{ .Values.publicIP }}/privkey.pem; # managed by Certbot
-        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-        {{- end }}
-
-        server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
-        root /var/www/wordpress;
-        index index.php;
-
-        location / {
-            try_files $uri $uri/ /index.php?$args;
-        }
-
-        location ~ \.php$ {
-            include snippets/fastcgi-php.conf;
-            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
         }
     }
 
