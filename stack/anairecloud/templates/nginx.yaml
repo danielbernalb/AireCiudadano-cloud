@@ -103,7 +103,6 @@ data:
         server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
 
         location / {
-            rewrite ^/route/?(.*)$ /$1 break;
             proxy_pass  {{ .Values.publicIP }}:1443;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
