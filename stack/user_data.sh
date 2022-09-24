@@ -35,9 +35,9 @@ echo "alias helm='microk8s.helm3'" >> $HOME/.bashrc
 
 #================Install anaire cloud stack=================
 cd $HOME
-git clone --branch cambios12_22sept https://github.com/danielbernalb/aireciudadano-cloud.git
+git clone --branch cambios12_23sept_testVB https://github.com/danielbernalb/aireciudadano-cloud.git
 ln -s anaire-cloud/stack/virtualbox/delete_stack.sh
 ln -s anaire-cloud/stack/virtualbox/upgrade_stack.sh
 ln -s anaire-cloud/stack/virtualbox/start_stack.sh
-sudo microk8s.helm3 install --set tls=true --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD aireciudadanostack aireciudadano-cloud/stack/aireciudadanocloud
+sudo microk8s.helm3 install --set tls=false --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD aireciudadanostack aireciudadano-cloud/stack/aireciudadanocloud
 #===========================================================
