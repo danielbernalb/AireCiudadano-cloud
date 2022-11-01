@@ -76,7 +76,7 @@ data:
 
         device_id = payload.pop('id', None)
         if device_id:
-            msg = 'PM25 ' + str(payload.pop('PM25', 0)) + '\n' + \
+            msg = 'PM25test ' + str(payload.pop('PM25', 0)) + '\n' + \
                   'CO2 ' + str(payload.pop('CO2', 0)) + '\n' + \
                   'VOC ' + str(payload.pop('VOC', 0)) + '\n' + \
                   'NOx ' + str(payload.pop('NOx', 0)) + '\n' + \
