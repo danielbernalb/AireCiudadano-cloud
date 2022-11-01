@@ -107,6 +107,8 @@ data:
        payload = msg.payload.decode("utf-8")
         payload = yaml.safe_load(msg.payload.decode("utf-8"))
 
+        print(f"Send `{msg}` to topicfixed `measurementfixed`")
+
         device_id = payload.pop('id', None)
         if device_id:
             msg = 'PM25prueba1 ' + str(payload.pop('PM25', 0)) + '\n' + \
