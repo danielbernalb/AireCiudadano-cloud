@@ -55,7 +55,7 @@ spec:
       volumes:
         - name: prometheus-config-volume
           configMap:
-            defaultMode: 777
+            defaultMode: 420
             name: prometheus-server-conf
         - name: prometheus-storage-volume
           hostPath:
