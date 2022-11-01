@@ -66,8 +66,45 @@ data:
         # connect mqtt broker
         client.subscribe([("measurement", 0)])
         
+    def on_connect2(client, userdata, flags, rc):
+        # connect mqtt broker
+        client.subscribe([("measurement_fixed", 0)])
+
     def on_message(client, userdata, msg):
         payload = msg.payload.decode("utf-8")
+        payload = yaml.safe_load(msg.payload.decode("utf-8"))
+
+        device_id = payload.pop('id', None)
+        if device_id:
+            msg = 'PM25 ' + str(payload.pop('PM25', 0)) + '\n' + \
+                  'CO2 ' + str(payload.pop('CO2', 0)) + '\n' + \
+                  'VOC ' + str(payload.pop('VOC', 0)) + '\n' + \
+                  'NOx ' + str(payload.pop('NOx', 0)) + '\n' + \
+                  'Humidity ' + str(payload.pop('humidity', 0)) + '\n' + \
+                  'Temperature ' + str(payload.pop('temperature', 0)) + '\n' + \
+                  'Noise ' + str(payload.pop('noisedba', 0)) + '\n' + \
+                  'RSSI ' + str(payload.pop('RSSI', 0)) + '\n' + \
+                  'Latitude ' + str(payload.pop('latitude', 0)) + '\n' + \
+                  'Longitude ' + str(payload.pop('longitude', 0)) + '\n' + \
+                  'InOut ' + str(payload.pop('inout', 0)) + '\n' + \
+                  'ConfigVal ' + str(payload.pop('configval', 0)) + '\n' + \
+                  'PM25raw ' + str(payload.pop('PM25raw', 0)) + '\n' + \
+                  'NoisePeak ' + str(payload.pop('noisepeak', 0)) + '\n' + \
+                  'PM252 ' + str(payload.pop('PM252', 0)) + '\n' + \
+                  'PM10 ' + str(payload.pop('PM10', 0)) + '\n' + \
+                  'MAC ' + str(payload.pop('mac', 0)) + '\n' + \
+                  'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
+                  'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
+
+            URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
+            pushdata(msg, URL)
+            print(msg)
+
+        else:
+            print( 'ERROR: Malformed message' + str(payload))
+
+    def on_message2(client, userdata, msg):
+       payload = msg.payload.decode("utf-8")
         payload = yaml.safe_load(msg.payload.decode("utf-8"))
 
         device_id = payload.pop('id', None)
@@ -92,49 +129,12 @@ data:
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
 
-            URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
-            pushdata(msg, URL)
+#            URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
+#            pushdata(msg, URL)
             print(msg)
-
-            client.subscribe([("measurement_fixed", 0)])
-            msg = '"PM25": ' + str(payload.pop('PM25', 0)) +
-                  '"CO2": ' + str(payload.pop('CO2', 0)) +
-                  '"VOC": ' + str(payload.pop('VOC', 0)) +
-                  '"NOx": ' + str(payload.pop('NOx', 0)) +
-                  '"Humidity": ' + str(payload.pop('humidity', 0)) +
-                  '"Temperature": ' + str(payload.pop('temperature', 0)) +
-                  '"Noise": ' + str(payload.pop('noisedba', 0)) +
-                  '"RSSI": ' + str(payload.pop('RSSI', 0)) +
-                  '"Latitude": ' + str(payload.pop('latitude', 0)) +
-                  '"Longitude": ' + str(payload.pop('longitude', 0)) +
-                  '"InOut": ' + str(payload.pop('inout', 0)) +
-                  '"ConfigVal": ' + str(payload.pop('configval', 0)) +
-                  '"PM25raw": ' + str(payload.pop('PM25raw', 0)) +
-                  '"NoisePeak": ' + str(payload.pop('noisepeak', 0)) +
-                  '"PM252": ' + str(payload.pop('PM252', 0)) +
-                  '"PM10": ' + str(payload.pop('PM10', 0)) +
-                  '"MAC": ' + str(payload.pop('mac', 0)) +
-                  '"Var1": ' + str(payload.pop('datavar1', 0)) +
-                  '"Var2": ' + str(payload.pop('datavar2', 0))
-
-            print(msg)
-            
-            msg_count = 0
-            while True:
-              time.sleep(1)
-              msg = f"messages: {msg_count}"
-              result = client.publish(measurement_fixed, msg)
-              # result: [0, 1]
-              status = result[0]
-              if status == 0:
-                print(f"Send `{msg}` to topic `{topic}`")
-              else:
-                print(f"Failed to send message to topic {topic}")
-              msg_count += 1
 
         else:
             print( 'ERROR: Malformed message' + str(payload))
-        
 
     def main():
       if (len(sys.argv) != 3):
@@ -145,6 +145,8 @@ data:
       client.connect(sys.argv[2], 1883)
       client.on_connect = on_connect
       client.on_message = on_message
+      client.on_connect2 = on_connect2
+      client.on_message2 = on_message2
       client.loop_forever()
 
     if __name__ == "__main__":
