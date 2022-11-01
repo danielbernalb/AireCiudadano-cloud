@@ -129,8 +129,6 @@ data:
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
 
-#            URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
-#            pushdata(msg, URL)
             print(msg)
 
         else:
