@@ -129,7 +129,7 @@ data:
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
 
-            print(f"Send `{msg}` to topic `measurementfixed`")
+            print(f"Send `{msg}` to topicfixed `measurementfixed`")
 
         else:
             print( 'ERROR: Malformed message' + str(payload))
