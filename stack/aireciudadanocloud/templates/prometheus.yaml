@@ -15,6 +15,14 @@ data:
 
         static_configs:
           - targets: ['pushgateway-np:9091']
+
+  ## SecurityContext configuration
+  ##
+securityContext:
+  enabled: true
+  runAsUser: 0
+  fsGroup: 0
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -47,7 +55,7 @@ spec:
       volumes:
         - name: prometheus-config-volume
           configMap:
-            defaultMode: 420
+            defaultMode: 777
             name: prometheus-server-conf
         - name: prometheus-storage-volume
           hostPath:
