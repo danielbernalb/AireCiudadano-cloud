@@ -94,6 +94,7 @@ data:
 
             URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
             pushdata(msg, URL)
+            print(msg)
 
             client.subscribe([("measurement_fixed", 0)])
             msg = '"PM25": ' + str(payload.pop('PM25', 0)) +
@@ -116,6 +117,8 @@ data:
                   '"Var1": ' + str(payload.pop('datavar1', 0)) +
                   '"Var2": ' + str(payload.pop('datavar2', 0))
 
+            print(msg)
+            
             msg_count = 0
             while True:
               time.sleep(1)
