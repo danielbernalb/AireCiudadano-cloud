@@ -68,7 +68,7 @@ data:
         
     def on_connect2(client, userdata, flags, rc):
         # connect mqtt broker
-        client.subscribe([("measurement_fixed", 0)])
+        client.subscribe([("measurementfixed", 0)])
 
     def on_message(client, userdata, msg):
         payload = msg.payload.decode("utf-8")
@@ -98,7 +98,7 @@ data:
 
             URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
             pushdata(msg, URL)
-            print(msg)
+            print(f"Send `{msg}` to topic `measurement`")
 
         else:
             print( 'ERROR: Malformed message' + str(payload))
@@ -129,7 +129,7 @@ data:
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
 
-            print(msg)
+            print(f"Send `{msg}` to topic `measurementfixed`")
 
         else:
             print( 'ERROR: Malformed message' + str(payload))
