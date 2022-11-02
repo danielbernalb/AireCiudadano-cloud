@@ -52,7 +52,7 @@ data:
     import yaml
 
     broker = 'sensor.aireciudadano.com'
-    port = 1883
+    port = 30183
 
     HEADERS = {'X-Requested-With': 'Python requests', 'Content-type': 'text/xml'}
 
@@ -155,7 +155,6 @@ data:
       client.connect(sys.argv[2], 1883)
       client.on_connect = on_connect
       client.on_message = on_message
-      client = mqtt.Client()               #create new instance
       client.on_connect= on_connect2                      #attach function to callback
       client.connect(broker, port=port)          #connect to broke
       client.on_message = on_message2
