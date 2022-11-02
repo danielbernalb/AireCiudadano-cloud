@@ -107,8 +107,6 @@ data:
        payload = msg.payload.decode("utf-8")
         payload = yaml.safe_load(msg.payload.decode("utf-8"))
 
-        print(f"Send `{msg}` to topicfixed `measurementfixed`")
-
         device_id = payload.pop('id', None)
         if device_id:
             msg = 'PM25prueba1 ' + str(payload.pop('PM25', 0)) + '\n' + \
@@ -130,9 +128,7 @@ data:
                   'MAC ' + str(payload.pop('mac', 0)) + '\n' + \
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
-
-            print(f"Send `{msg}` to topicfixed `measurementfixed`")
-
+                  
         else:
             print( 'ERROR: Malformed message' + str(payload))
 
