@@ -51,6 +51,9 @@ data:
     from paho.mqtt import client as mqtt
     import yaml
 
+    broker = 'sensor.aireciudadano.com'
+    port = 1883
+
     HEADERS = {'X-Requested-With': 'Python requests', 'Content-type': 'text/xml'}
 
 
@@ -66,9 +69,17 @@ data:
         # connect mqtt broker
         client.subscribe([("measurement", 0)])
         
-    def on_connect2(client, userdata, flags, rc):
-        # connect mqtt broker
-        client.subscribe([("measurementfixed", 0)])
+    def connect_mqtt():
+      def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT Broker!")
+        else:
+            print("Failed to connect, return code %d\n", rc)
+
+      client = mqtt.Client(client_id)
+      client.on_connect = on_connect
+      client.connect(broker, port)
+      return client
 
     def on_message(client, userdata, msg):
         payload = msg.payload.decode("utf-8")
@@ -98,37 +109,44 @@ data:
 
             URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
             pushdata(msg, URL)
-            print(f"Send `{msg}` to topic `measurement`")
 
         else:
             print( 'ERROR: Malformed message' + str(payload))
 
     def on_message2(client, userdata, msg):
-       payload = msg.payload.decode("utf-8")
+        payload = msg.payload.decode("utf-8")
         payload = yaml.safe_load(msg.payload.decode("utf-8"))
 
         device_id = payload.pop('id', None)
         if device_id:
-            msg = 'PM25prueba1 ' + str(payload.pop('PM25', 0)) + '\n' + \
-                  'CO2prueba2 ' + str(payload.pop('CO2', 0)) + '\n' + \
-                  'VOC ' + str(payload.pop('VOC', 0)) + '\n' + \
-                  'NOx ' + str(payload.pop('NOx', 0)) + '\n' + \
-                  'Humidity ' + str(payload.pop('humidity', 0)) + '\n' + \
-                  'Temperature ' + str(payload.pop('temperature', 0)) + '\n' + \
-                  'Noise ' + str(payload.pop('noisedba', 0)) + '\n' + \
-                  'RSSI ' + str(payload.pop('RSSI', 0)) + '\n' + \
-                  'Latitude ' + str(payload.pop('latitude', 0)) + '\n' + \
-                  'Longitude ' + str(payload.pop('longitude', 0)) + '\n' + \
-                  'InOut ' + str(payload.pop('inout', 0)) + '\n' + \
-                  'ConfigVal ' + str(payload.pop('configval', 0)) + '\n' + \
-                  'PM25raw ' + str(payload.pop('PM25raw', 0)) + '\n' + \
-                  'NoisePeak ' + str(payload.pop('noisepeak', 0)) + '\n' + \
-                  'PM252 ' + str(payload.pop('PM252', 0)) + '\n' + \
-                  'PM10 ' + str(payload.pop('PM10', 0)) + '\n' + \
-                  'MAC ' + str(payload.pop('mac', 0)) + '\n' + \
-                  'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
-                  'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
-                  
+            msg = '"PM25test22": ' + str(payload.pop('PM25', 0)) +
+                  '"CO2": ' + str(payload.pop('CO2', 0)) +
+                  '"VOC": ' + str(payload.pop('VOC', 0)) +
+                  '"NOx": ' + str(payload.pop('NOx', 0)) +
+                  '"Humidity": ' + str(payload.pop('humidity', 0)) +
+                  '"Temperature": ' + str(payload.pop('temperature', 0)) +
+                  '"Noise": ' + str(payload.pop('noisedba', 0)) +
+                  '"RSSI": ' + str(payload.pop('RSSI', 0)) +
+                  '"Latitude": ' + str(payload.pop('latitude', 0)) +
+                  '"Longitude": ' + str(payload.pop('longitude', 0)) +
+                  '"InOut" ' + str(payload.pop('inout', 0)) +
+                  '"ConfigVal" ' + str(payload.pop('configval', 0)) +
+                  '"PM25raw" ' + str(payload.pop('PM25raw', 0)) +
+                  '"NoisePeak" ' + str(payload.pop('noisepeak', 0)) +
+                  '"PM252" ' + str(payload.pop('PM252', 0)) +
+                  '"PM10" ' + str(payload.pop('PM10', 0)) +
+                  '"MAC" ' + str(payload.pop('mac', 0)) +
+                  '"Var1" ' + str(payload.pop('datavar1', 0)) +
+                  '"Var2" ' + str(payload.pop('datavar2', 0))
+
+            result = client.publish("measurementfixed", msg)
+            # result: [0, 1]
+            status = result[0]
+            if status == 0:
+              print(f"Send `{msg}` to topic `{"measurementfixed"}`")
+            else:
+              print(f"Failed to send message to topic {topic}")
+                 
         else:
             print( 'ERROR: Malformed message' + str(payload))
 
@@ -141,8 +159,8 @@ data:
       client.connect(sys.argv[2], 1883)
       client.on_connect = on_connect
       client.on_message = on_message
-      client.on_connect2 = on_connect2
-      client.on_message2 = on_message2
+      client.on_connect = connect_mqtt
+      client.on_message = on_message2
       client.loop_forever()
 
     if __name__ == "__main__":
