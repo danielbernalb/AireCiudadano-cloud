@@ -72,7 +72,7 @@ kind: Service
 metadata:
   name: prometheus-cip-ext
 spec:
-  type: Nodeport
+  type: NodePort
   selector:
     app: prometheus
   ports:
