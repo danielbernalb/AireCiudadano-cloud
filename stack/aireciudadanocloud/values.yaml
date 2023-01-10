@@ -81,7 +81,7 @@ resources:
   apiserver:
     requests:
       memory: "150Mi"
-      cpu: "120m"
+      cpu: "150m"
       ephemeral-storage: "200Mi"
     limits:
       memory: "250Mi"
@@ -89,13 +89,13 @@ resources:
       ephemeral-storage: "400Mi"
   cleanercronjob:
     requests:
-      memory: "75Mi"
-      cpu: "250m"
-      ephemeral-storage: "150Mi"
+      memory: "100Mi"
+      cpu: "350m"
+      ephemeral-storage: "200Mi"
     limits:
       memory: "200Mi"
-      cpu: "350m"
-      ephemeral-storage: "300Mi"
+      cpu: "500m"
+      ephemeral-storage: "350Mi"
   nginx:
     requests:
       memory: "150Mi"
