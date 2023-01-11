@@ -26,7 +26,7 @@ smtp_from: your sender name
 resources:
   mqttbroker:
     requests:
-      memory: "80Mi"
+      memory: "100Mi"
       cpu: "100m"
       ephemeral-storage: "200Mi"
     limits:
@@ -90,12 +90,12 @@ resources:
   cleanercronjob:
     requests:
       memory: "100Mi"
-      cpu: "500m"
+      cpu: "100m"
       ephemeral-storage: "200Mi"
     limits:
       memory: "200Mi"
-      cpu: "700m"
-      ephemeral-storage: "350Mi"
+      cpu: "150m"
+      ephemeral-storage: "300Mi"
   nginx:
     requests:
       memory: "150Mi"
