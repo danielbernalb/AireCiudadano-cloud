@@ -37,7 +37,7 @@ spec:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus/"
             - "--storage.tsdb.retention.time=365d"
-            - "--web.enable-admin-api=true"
+            - "--web.enable-admin-api"
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: /etc/prometheus/
