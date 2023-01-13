@@ -90,11 +90,11 @@ resources:
   cleanercronjob:
     requests:
       memory: "100Mi"
-      cpu: "150m"
+      cpu: "250m"
       ephemeral-storage: "200Mi"
     limits:
       memory: "200Mi"
-      cpu: "200m"
+      cpu: "350m"
       ephemeral-storage: "300Mi"
   nginx:
     requests:
