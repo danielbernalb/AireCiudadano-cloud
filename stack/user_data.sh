@@ -26,8 +26,8 @@ done
 #Create all in one kubernetes
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
-sudo microk8s.enable dns
-sudo microk8s.enable helm3
+sudo microk8s enable dns
+sudo microk8s enable helm3
 echo "alias sudo='sudo '" >> $HOME/.bashrc
 echo "alias kubectl='microk8s.kubectl'" >> $HOME/.bashrc
 echo "alias helm='microk8s.helm3'" >> $HOME/.bashrc
