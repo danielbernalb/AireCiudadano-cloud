@@ -18,6 +18,8 @@ spec:
           env:
           - name: GF_AUTH_ANONYMOUS_ENABLED
             value: "true"
+          - name: GF_SECURITY_ALLOW_EMBEDDING
+            value: "true"
           - name: GF_SECURITY_ADMIN_PASSWORD
             value: "${GRAFANA_ADMIN_PASSWORD}"
           - name: GF_SERVER_ROOT_URL
@@ -71,12 +73,6 @@ data:
         version: 1
         editable: true
         isDefault: true
-	  [auth.anonymous]
-    enabled = true
-    [users]
-    default_theme = light
-    [security]
-    allow_embedding = true
 ---
 apiVersion: v1
 kind: Service
