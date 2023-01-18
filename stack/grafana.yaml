@@ -71,6 +71,12 @@ data:
         version: 1
         editable: true
         isDefault: true
+	  [auth.anonymous]
+    enabled = true
+    [users]
+    default_theme = light
+    [security]
+    allow_embedding = true
 ---
 apiVersion: v1
 kind: Service
