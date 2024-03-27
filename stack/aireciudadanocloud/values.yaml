@@ -9,7 +9,7 @@ publicIP: sensor.aireciudadano.com
 grafanaAdminPass: yourgrafanaadminpassword
 
 #If there is a letsencrypt certificate prepared to be used by nginx in /data/letsencrypt set this var to true
-tls: true
+tls: false
 
 smtp_enabled: false
 smtp_host: smtp.example.com:587

@@ -39,5 +39,5 @@ git clone --branch cambios22NS_27mar2024 https://github.com/danielbernalb/aireci
 ln -s anaire-cloud/stack/virtualbox/delete_stack.sh
 ln -s anaire-cloud/stack/virtualbox/upgrade_stack.sh
 ln -s anaire-cloud/stack/virtualbox/start_stack.sh
-sudo microk8s.helm3 install --set tls=true --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD aireciudadanostack aireciudadano-cloud/stack/aireciudadanocloud
+sudo microk8s.helm3 install --set tls=false --set publicIP=$PUBLIC_IP --set grafanaAdminPass=$GRAFANA_ADMIN_PASSWORD aireciudadanostack aireciudadano-cloud/stack/aireciudadanocloud
 #===========================================================
