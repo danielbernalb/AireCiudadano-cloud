@@ -85,7 +85,7 @@ resources:
       ephemeral-storage: "300Mi"
   nginx:
     requests:
-      memory: "20Mi"
+      memory: "200Mi"
       cpu: "200m"
       ephemeral-storage: "350Mi"
     limits:
