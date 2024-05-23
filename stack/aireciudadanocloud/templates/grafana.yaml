@@ -20,6 +20,8 @@ spec:
             value: "true"
           - name: GF_SECURITY_ALLOW_EMBEDDING
             value: "true"
+          - name: GF_SERVER_ENABLE_GZIP
+            value: "true"  
           - name: GF_SECURITY_ADMIN_PASSWORD
             value: "{{ .Values.grafanaAdminPass }}"
           - name: GF_SERVER_ROOT_URL
