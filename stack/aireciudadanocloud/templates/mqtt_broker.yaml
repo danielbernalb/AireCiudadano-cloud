@@ -18,7 +18,7 @@ spec:
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/
-            - name: mqtt-config
+            - name: mqtt-config-writable
               mountPath: /mosquitto/config/mosquitto.conf
               subPath: mosquitto.conf
           resources:
@@ -28,7 +28,7 @@ spec:
           hostPath:
             path: /data/mosquitto
             type: Directory
-        - name: mqtt-config
+        - name: mqtt-config-writable
           configMap:
             name: mqttbroker-config
 ---
