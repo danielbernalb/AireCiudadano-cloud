@@ -52,11 +52,11 @@ data:
       metrics = json.loads(response.text)
       now = time.localtime()
       for data in metrics['data']:
-        co2 = data.get('CO2', False)
-        if co2:
-          last_time = time.strptime(co2['time_stamp'][:16], '%Y-%m-%dT%H:%M')
+        pm25 = data.get('PM25', False)
+        if pm25:
+          last_time = time.strptime(pm25['time_stamp'][:16], '%Y-%m-%dT%H:%M')
           if (int((time.mktime(now) - time.mktime(last_time)) / 60) > max_age):
-            url = 'http://' + PUSHGATEWAT_URL + '/metrics/job/' + co2['metrics'][0]['labels']['job']
+            url = 'http://' + PUSHGATEWAT_URL + '/metrics/job/' + pm25['metrics'][0]['labels']['job']
             print('DELETE ' + url)
             response = requests.request('DELETE', url)
 

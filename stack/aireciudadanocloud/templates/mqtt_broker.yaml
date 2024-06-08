@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mqttbroker
-          image: eclipse-mosquitto
+          image: eclipse-mosquitto:1.6.14
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/
@@ -22,12 +22,7 @@ spec:
               mountPath: /mosquitto/config/mosquitto.conf
               subPath: mosquitto.conf
           resources:
-            requests:
-              memory: "50Mi"
-              cpu: "50m"
-            limits:
-              memory: "50Mi"
-              cpu: "100m"
+            {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
         - name: mqtt-storage-volume
           hostPath:

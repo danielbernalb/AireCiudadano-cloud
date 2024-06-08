@@ -56,7 +56,7 @@ data:
     pip install unidecode
     pip install -U grafana_api
     cd /root/
-    git clone https://github.com/anaireorg/anaire-cloud.git
+    git clone https://github.com/danielbernalb/aireciudadano-cloud.git
     while ((1))
     do
       python /config/api_server.py grafana-np:3000 "{{ .Values.grafanaAdminPass }}" mqtt-np:1883
@@ -87,7 +87,7 @@ data:
     HEADERS = {'Authorization': 'Basic '+base64.b64encode((ADMIN_LOGIN+':'+ADMIN_PASS).encode('ascii')).decode('ascii'), 'Content-type': 'application/json'}
     #reference dict
     reference_dict = {}
-    client = mqtt.Client()
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
     @route('/update')
     def do_update():
@@ -148,7 +148,7 @@ data:
         }
         client.publish("config/" + str(update['id']),json.dumps(data))
 
-    def on_publish(client,userdata,result):
+    def on_publish(client, userdata, mid, reason_codes, properties):
       print("data published \n")
       pass
 
@@ -199,9 +199,9 @@ data:
         device_dashboard['dashboard']['panels'][0]['thresholds'][0]['value'] = int(sensor_info['warning'])
         device_dashboard['dashboard']['panels'][0]['thresholds'][1]['value'] = int(sensor_info['caution'])
 
-        #Update the device name in the panel CO2
+        #Update the device name in the panel PM25
         for target in device_dashboard['dashboard']['panels'][0]['targets']:
-          if target['expr'] == 'CO2{exported_job="'+str(sensor_info['db_uid'])+'"}':
+          if target['expr'] == 'PM25{exported_job="'+str(sensor_info['db_uid'])+'"}':
             target['legendFormat'] = sensor_info['name']
             break
         #Update the device name in the panel Temperature

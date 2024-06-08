@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:1.19.6-alpine
+          image: nginx:1.26.0-alpine
           {{- if eq .Values.tls true }}
           command: ["sh"]
           args: ["-c","/scripts/run.sh"]
@@ -32,15 +32,15 @@ spec:
             {{- toYaml .Values.resources.nginx | nindent 12 }}
             requests:
           ports:
-          - containerPort: 80
-            hostPort: 80
+          - containerPort: 1080
+            hostPort: 1080
             protocol: TCP
-          - containerPort: 443
-            hostPort: 443
+          - containerPort: 1443
+            hostPort: 1443
             protocol: TCP
       initContainers:
         - name: copyfile
-          image: nginx:1.19.6-alpine
+          image: nginx:1.25.0-alpine
           volumeMounts:
             - name: confd
               mountPath: /confd
@@ -89,15 +89,15 @@ data:
 
     server {
         {{- if eq .Values.tls true }}
-        listen [::]:443 ssl ipv6only=on; # managed by Certbot
-        listen 443 ssl; # managed by Certbot
+        listen [::]:1443 ssl ipv6only=on; # managed by Certbot
+        listen 1443 ssl; # managed by Certbot
         ssl_certificate /etc/letsencrypt/live/{{ .Values.publicIP }}/fullchain.pem; # managed by Certbot
         ssl_certificate_key /etc/letsencrypt/live/{{ .Values.publicIP }}/privkey.pem; # managed by Certbot
         include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
         ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
         {{- else }}
-        listen       80;
-        listen  [::]:80;
+        listen       1080;
+        listen  [::]:1080;
         {{- end }}
 
         server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
@@ -145,8 +145,8 @@ data:
         } # managed by Certbot
         {{- end }}
 
-        listen [::]:80;
-        listen 80;
+        listen [::]:1080;
+        listen 1080;
 
         server_name  {{ .Values.secondaryPublicIP }} {{ .Values.publicIP }};
         return 404; # managed by Certbot

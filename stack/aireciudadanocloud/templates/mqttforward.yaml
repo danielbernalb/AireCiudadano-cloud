@@ -62,7 +62,7 @@ data:
       except requests.exceptions.RequestException as e:  # This is the correct syntax
         raise SystemExit(e)
 
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(client, userdata, flags, reason_code, properties):
         # connect mqtt broker
         client.subscribe([("measurement", 0)])
         
@@ -72,9 +72,27 @@ data:
 
         device_id = payload.pop('id', None)
         if device_id:
-            msg = 'CO2 ' + str(payload.pop('CO2', 0)) + '\n' + \
+            msg = 'PM25 ' + str(payload.pop('PM25', 0)) + '\n' + \
+                  'CO2 ' + str(payload.pop('CO2', 0)) + '\n' + \
+                  'VOC ' + str(payload.pop('VOC', 0)) + '\n' + \
+                  'NOx ' + str(payload.pop('NOx', 0)) + '\n' + \
+                  'Humidity ' + str(payload.pop('humidity', 0)) + '\n' + \
                   'Temperature ' + str(payload.pop('temperature', 0)) + '\n' + \
-                  'Humidity ' + str(payload.pop('humidity', 0)) + '\n'
+                  'Noise ' + str(payload.pop('noisedba', 0)) + '\n' + \
+                  'RSSI ' + str(payload.pop('RSSI', 0)) + '\n' + \
+                  'Latitude ' + str(payload.pop('latitude', 0)) + '\n' + \
+                  'Longitude ' + str(payload.pop('longitude', 0)) + '\n' + \
+                  'InOut ' + str(payload.pop('inout', 0)) + '\n' + \
+                  'ConfigVal ' + str(payload.pop('configval', 0)) + '\n' + \
+                  'PM25raw ' + str(payload.pop('PM25raw', 0)) + '\n' + \
+                  'NoisePeak ' + str(payload.pop('noisepeak', 0)) + '\n' + \
+                  'PM251 ' + str(payload.pop('PM251', 0)) + '\n' + \
+                  'PM252 ' + str(payload.pop('PM252', 0)) + '\n' + \
+                  'PM1 ' + str(payload.pop('PM1', 0)) + '\n' + \
+                  'MAC ' + str(payload.pop('mac', 0)) + '\n' + \
+                  'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
+                  'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
+
             URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
             pushdata(msg, URL)
         else:
@@ -86,7 +104,7 @@ data:
           print('Usage: '+sys.argv[0]+' <pushgateway IP> <mqttbroker IP>. Found '+len(sys.argv)+' arguments.')
           exit()
       
-      client = mqtt.Client()
+      client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
       client.connect(sys.argv[2], 1883)
       client.on_connect = on_connect
       client.on_message = on_message
