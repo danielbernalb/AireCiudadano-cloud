@@ -3,11 +3,10 @@ kind: ConfigMap
 metadata:
   name: thanos-sidecar-config
 data:
-  thanos.yaml: |-
-    objstore:
-      type: FILESYSTEM
-      config:
-        directory: /thanos/store
+  objstore.yml: |-
+    type: filesystem
+    config:
+      directory: /thanos/store
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -75,7 +74,7 @@ spec:
           args:
             - "compact"
             - "--data-dir=/thanos/compact"
-            - "--objstore.config-file=/thanos/config/thanos.yaml"
+            - "--objstore.config-file=/thanos/config/objstore.yml"
           volumeMounts:
             - name: thanos-compactor-storage
               mountPath: /thanos/compact
@@ -112,7 +111,7 @@ spec:
             - "--prometheus.url=http://prometheus-cip:9090"
             - "--grpc-address=0.0.0.0:10901"
             - "--http-address=0.0.0.0:10902"
-            - "--objstore.config-file=/thanos/config/thanos.yaml"
+            - "--objstore.config-file=/thanos/config/objstore.yml"
           ports:
             - containerPort: 10901
               name: grpc
@@ -156,7 +155,7 @@ spec:
           args:
             - "store"
             - "--data-dir=/thanos/store"
-            - "--objstore.config-file=/thanos/config/thanos.yaml"
+            - "--objstore.config-file=/thanos/config/objstore.yml"
             - "--grpc-address=0.0.0.0:10901"
             - "--http-address=0.0.0.0:10902"
           ports:
