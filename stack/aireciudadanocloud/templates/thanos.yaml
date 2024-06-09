@@ -116,7 +116,7 @@ spec:
           image: thanosio/thanos:v0.35.1
           args:
             - "sidecar"
-            - "--tsdb.path=/prometheus/"
+            - "--tsdb.path=/prometheus"
             - "--prometheus.url=http://prometheus-cip:9090"
             - "--grpc-address=0.0.0.0:10901"
             - "--http-address=0.0.0.0:10902"
@@ -127,11 +127,17 @@ spec:
             - containerPort: 10902
               name: http
           volumeMounts:
+          - name: prometheus-storage-volume
+              mountPath: /prometheus
             - name: thanos-config
               mountPath: /thanos/config
             - name: thanos-store
               mountPath: /thanos/store
       volumes:
+        - name: prometheus-storage-volume
+          hostPath:
+            path: /data/prometheus
+            type: Directory
         - name: thanos-config
           configMap:
             name: thanos-sidecar-config
