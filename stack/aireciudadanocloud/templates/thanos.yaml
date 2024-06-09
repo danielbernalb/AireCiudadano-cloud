@@ -97,6 +97,7 @@ spec:
           configMap:
             name: thanos-sidecar-config
 ---
+# Deployment de Thanos Sidecar
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -117,7 +118,7 @@ spec:
           args:
             - "sidecar"
             - "--tsdb.path=/prometheus"
-            - "--prometheus.url=http://prometheus-cip:9090"
+            - "--prometheus.url=http://prometheus-cip:9090"  # Cambia 'prometheus-cip' a 'prometheus' si el nombre del servicio es diferente
             - "--grpc-address=0.0.0.0:10901"
             - "--http-address=0.0.0.0:10902"
             - "--objstore.config-file=/thanos/config/objstore.yml"
@@ -131,8 +132,6 @@ spec:
               mountPath: /prometheus
             - name: thanos-config
               mountPath: /thanos/config
-            - name: thanos-store
-              mountPath: /thanos/store
       volumes:
         - name: prometheus-storage-volume
           hostPath:
@@ -141,8 +140,6 @@ spec:
         - name: thanos-config
           configMap:
             name: thanos-sidecar-config
-        - name: thanos-store
-          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
