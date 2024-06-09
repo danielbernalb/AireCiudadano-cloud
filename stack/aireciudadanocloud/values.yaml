@@ -94,10 +94,10 @@ resources:
       ephemeral-storage: "550Mi"
   thanos:
     requests:
-      memory: "500Mi"
-      cpu: "250m"
-      ephemeral-storage: "800Gi"
-    limits:
       memory: "800Mi"
-      cpu: "350m"
+      cpu: "300m"
       ephemeral-storage: "1Gi"
+    limits:
+      memory: "1Gi"
+      cpu: "450m"
+      ephemeral-storage: "1.2Gi"
