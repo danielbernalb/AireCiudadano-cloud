@@ -83,7 +83,7 @@ spec:
             - "--data-dir=/thanos/store"
             - "--objstore.config-file=/thanos/config/objstore.yml"
             - "--log.level=debug"
-            - "--wait"
+            - "--wait"  # Agregar esta línea para mantener el proceso en ejecución
           volumeMounts:
             - name: thanos-compactor-storage
               mountPath: /thanos/store
@@ -144,6 +144,19 @@ spec:
             name: thanos-sidecar-config
         - name: thanos-store
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos-sidecar
+spec:
+  selector:
+    app: thanos-sidecar
+  ports:
+    - port: 10901
+      targetPort: 10901
+    - port: 10902
+      targetPort: 10902
 ---
 apiVersion: apps/v1
 kind: Deployment
