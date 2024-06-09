@@ -70,11 +70,12 @@ spec:
     spec:
       containers:
         - name: thanos-compactor
-          image: thanosio/thanos:v0.35.1
+          image: thanosio/thanos:v0.32.2
           args:
             - "compact"
             - "--data-dir=/thanos/compact"
             - "--objstore.config-file=/thanos/config/objstore.yml"
+            - "--log.level=debug"  # Añadir nivel de registro detallado
           volumeMounts:
             - name: thanos-compactor-storage
               mountPath: /thanos/compact
@@ -104,7 +105,7 @@ spec:
     spec:
       containers:
         - name: thanos-sidecar
-          image: thanosio/thanos:v0.35.1
+          image: thanosio/thanos:v0.32.2
           args:
             - "sidecar"
             - "--tsdb.path=/prometheus/"
@@ -151,7 +152,7 @@ spec:
     spec:
       containers:
         - name: thanos-store
-          image: thanosio/thanos:v0.35.1
+          image: thanosio/thanos:v0.32.2
           args:
             - "store"
             - "--data-dir=/thanos/store"
@@ -192,7 +193,7 @@ spec:
     spec:
       containers:
         - name: thanos-query
-          image: thanosio/thanos:v0.35.1
+          image: thanosio/thanos:v0.32.2
           args:
             - "query"
             - "--http-address=0.0.0.0:10902"
