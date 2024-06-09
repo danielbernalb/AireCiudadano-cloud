@@ -39,6 +39,8 @@ spec:
             - "--storage.tsdb.retention.time=730d"
             - "--web.enable-admin-api"
             - "--web.enable-lifecycle"
+            - "--storage.tsdb.min-block-duration=2h"
+            - "--storage.tsdb.max-block-duration=2h"
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: /etc/prometheus/
