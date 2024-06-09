@@ -145,19 +145,6 @@ spec:
         - name: thanos-store
           emptyDir: {}
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: thanos-sidecar
-spec:
-  selector:
-    app: thanos-sidecar
-  ports:
-    - port: 10901
-      targetPort: 10901
-    - port: 10902
-      targetPort: 10902
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
