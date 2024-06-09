@@ -9,6 +9,9 @@ data:
     global:
       scrape_interval: 60s
       evaluation_interval: 180s
+      external_labels:
+        cluster: "example-cluster"
+        prometheus: "prometheus-server"
 
     scrape_configs:
       - job_name: 'pushgateway'
@@ -67,9 +70,9 @@ spec:
   selector:
     app: prometheus
   ports:
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
 ---
 apiVersion: v1
 kind: Service
@@ -80,6 +83,6 @@ spec:
   selector:
     app: prometheus
   ports:
-  - port: 9090
-    targetPort: 9090
-    nodePort: 30000
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30000
