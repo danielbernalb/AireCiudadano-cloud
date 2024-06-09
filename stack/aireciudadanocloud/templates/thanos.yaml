@@ -127,7 +127,7 @@ spec:
             - containerPort: 10902
               name: http
           volumeMounts:
-          - name: prometheus-storage-volume
+            - name: prometheus-storage-volume
               mountPath: /prometheus
             - name: thanos-config
               mountPath: /thanos/config
