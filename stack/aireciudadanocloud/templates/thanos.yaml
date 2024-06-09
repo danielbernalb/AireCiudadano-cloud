@@ -71,21 +71,22 @@ spec:
       initContainers:
         - name: init-permissions
           image: busybox
-          command: ["sh", "-c", "chmod -R 777 /thanos/compact"]
+          command: ["sh", "-c", "chmod -R 777 /thanos/store"]
           volumeMounts:
             - name: thanos-compactor-storage
-              mountPath: /thanos/compact
+              mountPath: /thanos/store
       containers:
         - name: thanos-compactor
           image: thanosio/thanos:v0.35.1
           args:
             - "compact"
-            - "--data-dir=/thanos/compact"
+            - "--data-dir=/thanos/store"
             - "--objstore.config-file=/thanos/config/objstore.yml"
             - "--log.level=debug"
+            - "--wait"  # Agregar esta línea para mantener el proceso en ejecución
           volumeMounts:
             - name: thanos-compactor-storage
-              mountPath: /thanos/compact
+              mountPath: /thanos/store
             - name: thanos-config
               mountPath: /thanos/config
       volumes:
@@ -126,17 +127,11 @@ spec:
             - containerPort: 10902
               name: http
           volumeMounts:
-#            - name: prometheus-storage
-#              mountPath: /prometheus
             - name: thanos-config
               mountPath: /thanos/config
             - name: thanos-store
               mountPath: /thanos/store
       volumes:
-#        - name: prometheus-storage
-#          hostPath:
-#            path: /data/prometheus
-#            type: Directory
         - name: thanos-config
           configMap:
             name: thanos-sidecar-config
