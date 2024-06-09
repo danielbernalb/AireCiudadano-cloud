@@ -68,6 +68,13 @@ spec:
       labels:
         app: thanos-compactor
     spec:
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chmod -R 777 /thanos/compact"]
+          volumeMounts:
+            - name: thanos-compactor-storage
+              mountPath: /thanos/compact
       containers:
         - name: thanos-compactor
           image: thanosio/thanos:v0.35.1
@@ -75,7 +82,7 @@ spec:
             - "compact"
             - "--data-dir=/thanos/compact"
             - "--objstore.config-file=/thanos/config/objstore.yml"
-            - "--log.level=debug"  # Añadir nivel de registro detallado
+            - "--log.level=debug"
           volumeMounts:
             - name: thanos-compactor-storage
               mountPath: /thanos/compact
