@@ -122,11 +122,11 @@ spec:
             - "--grpc-address=0.0.0.0:10901"
             - "--http-address=0.0.0.0:10902"
             - "--objstore.config-file=/thanos/config/objstore.yml"
-          ports:
-            - containerPort: 10901
-              name: grpc
-            - containerPort: 10902
-              name: http
+#          ports:
+#            - containerPort: 10901
+#              name: grpc
+#            - containerPort: 10902
+#              name: http
           volumeMounts:
             - name: prometheus-storage-volume
               mountPath: /prometheus
@@ -150,12 +150,10 @@ spec:
   selector:
     app: thanos-sidecar
   ports:
-    - name: grpc
-      port: 10901
-      targetPort: 10901
-    - name: http
-      port: 10902
-      targetPort: 10902
+    - containerPort: 10901
+      name: grpc
+    - containerPort: 10902
+      name: http
 ---
 apiVersion: apps/v1
 kind: Deployment
