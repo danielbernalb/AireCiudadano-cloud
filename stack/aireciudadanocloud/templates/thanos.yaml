@@ -54,6 +54,7 @@ spec:
     requests:
       storage: 20Gi
 ---
+# Deployment de Thanos Compactor
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -161,6 +162,7 @@ spec:
       port: 10902
       targetPort: 10902
 ---
+# Deployment de Thanos Store
 apiVersion: apps/v1
 kind: Deployment
 metadata:
