@@ -12,6 +12,7 @@ data:
       external_labels:
         cluster: "example-cluster"
         prometheus: "prometheus-server"
+
     scrape_configs:
       - job_name: 'pushgateway'
         static_configs:
