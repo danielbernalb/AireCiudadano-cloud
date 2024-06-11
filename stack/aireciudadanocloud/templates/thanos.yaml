@@ -4,7 +4,7 @@ metadata:
   name: thanos-sidecar-config
 data:
   objstore.yml: |-
-    type: filesystem
+    type: FILESYSTEM
     config:
       directory: /thanos/store
 ---
@@ -80,10 +80,18 @@ spec:
         - name: thanos-compactor
           image: thanosio/thanos:v0.35.1
           args:
+#https://thanos.io/tip/components/compact.md/#flags
             - "compact"
             - "--data-dir=/thanos/store"
             - "--objstore.config-file=/thanos/config/objstore.yml"
             - "--log.level=debug"
+#            - "--retention.resolution-raw=0d"
+#            - "--retention.resolution-5m=0d"
+#            - "--retention.resolution-1h=0d"
+#            - "--delete-delay=48h"
+#            - "--compact.concurrency=1"
+#            - "--downsample.concurrency=1"
+#            - "--downsampling.disable"
             - "--wait"  # Agregar esta línea para mantener el proceso en ejecución
           volumeMounts:
             - name: thanos-compactor-storage
