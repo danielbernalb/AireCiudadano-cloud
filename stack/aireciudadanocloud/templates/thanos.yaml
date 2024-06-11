@@ -224,6 +224,21 @@ spec:
           configMap:
             name: thanos-sidecar-config
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos-store
+spec:
+  selector:
+    app: thanos-store
+  ports:
+    - name: grpc
+      port: 10901
+      targetPort: 10901
+    - name: http
+      port: 10902
+      targetPort: 10902
+---
 # Deployment de Thanos Query Frontend
 apiVersion: apps/v1
 kind: Deployment
