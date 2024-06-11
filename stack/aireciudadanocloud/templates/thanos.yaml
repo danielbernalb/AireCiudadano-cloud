@@ -9,6 +9,18 @@ data:
       directory: /thanos/store
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thanos-cache-config
+data:
+  cache-config.yaml: |
+    type: IN-MEMORY
+    config:
+      max_size: 500MB
+      max_item_size: 5MB
+      validity: 24h
+---
+apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: thanos-compactor-pv
@@ -154,7 +166,7 @@ spec:
         - name: thanos-store
           emptyDir: {}
 ---
-#Servicio para Thanos Sidecar
+# Servicio para Thanos Sidecar
 apiVersion: v1
 kind: Service
 metadata:
@@ -212,6 +224,53 @@ spec:
           configMap:
             name: thanos-sidecar-config
 ---
+# Deployment de Thanos Query Frontend
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanos-query-frontend
+  labels:
+    app: thanos-query-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos-query-frontend
+  template:
+    metadata:
+      labels:
+        app: thanos-query-frontend
+    spec:
+      containers:
+      - name: thanos-query-frontend
+        image: thanosio/thanos:v0.35.1
+        args:
+        - query-frontend
+        - --query-frontend.downstream-url=http://thanos-query:10902
+        - --query-range.split-interval=24h
+        - --query-range.response-cache-config-file=/etc/thanos/cache-config.yaml
+        ports:
+        - containerPort: 9091
+        volumeMounts:
+        - name: cache-config
+          mountPath: /etc/thanos
+      volumes:
+      - name: cache-config
+        configMap:
+          name: thanos-cache-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos-query-frontend
+spec:
+  selector:
+    app: thanos-query-frontend
+  ports:
+    - name: http
+      port: 9091
+      targetPort: 9091
+---
 # Deployment de Thanos Query
 apiVersion: apps/v1
 kind: Deployment
@@ -231,10 +290,13 @@ spec:
         - name: thanos-query
           image: thanosio/thanos:v0.35.1
           args:
-            - "query"
-            - "--http-address=0.0.0.0:10902"
-            - "--grpc-address=0.0.0.0:10901"
-            - "--store=thanos-sidecar:10901"
+            - query
+            - --http-address=0.0.0.0:10902
+            - --grpc-address=0.0.0.0:10901
+            - --store=thanos-sidecar:10901
+            - --store=thanos-store:10901
+            - --query.auto-downsampling
+            - --query.partial-response
           ports:
             - containerPort: 10901
               name: grpc
