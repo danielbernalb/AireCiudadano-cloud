@@ -22,13 +22,13 @@ smtp_from: your sender name
 resources:
   mqttbroker:
     requests:
-      memory: "150Mi"
-      cpu: "90m"
-      ephemeral-storage: "250Mi"
-    limits:
-      memory: "200Mi"
+      memory: "250Mi"
       cpu: "150m"
       ephemeral-storage: "350Mi"
+    limits:
+      memory: "400Mi"
+      cpu: "250m"
+      ephemeral-storage: "550Mi"
   mqttforward:
     requests:
       memory: "150Mi"
