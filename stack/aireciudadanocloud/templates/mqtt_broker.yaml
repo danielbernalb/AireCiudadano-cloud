@@ -15,6 +15,9 @@ spec:
       containers:
         - name: mqttbroker
           image: eclipse-mosquitto:1.6.15
+          securityContext:
+            runAsUser: 1000  # Usuario dentro del contenedor que necesite los permisos
+            runAsGroup: 1000  # Grupo dentro del contenedor que necesite los permisos
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/
