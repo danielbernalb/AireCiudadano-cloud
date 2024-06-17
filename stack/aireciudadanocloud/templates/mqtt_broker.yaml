@@ -21,8 +21,6 @@ spec:
             - name: mqtt-config
               mountPath: /mosquitto/config/mosquitto.conf
               subPath: mosquitto.conf
-#          resources:
-#            {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
         - name: mqtt-storage-volume
           hostPath:

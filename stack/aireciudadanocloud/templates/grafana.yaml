@@ -64,8 +64,6 @@ spec:
             - name: grafana-config
               mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
               subPath: datasource.yaml
-#          resources:
-#            {{- toYaml .Values.resources.grafana | nindent 12 }}
       volumes:
         - name: grafana-storage-volume
           hostPath:

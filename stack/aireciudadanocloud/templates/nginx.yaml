@@ -28,9 +28,6 @@ spec:
             - name: nginx-run
               mountPath: /scripts
             {{- end }}
-#          resources:
-#            {{- toYaml .Values.resources.nginx | nindent 12 }}
-#            requests:
           ports:
           - containerPort: 1080
             hostPort: 1080

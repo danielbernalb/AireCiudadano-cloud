@@ -48,8 +48,6 @@ spec:
               mountPath: /etc/prometheus/
             - name: prometheus-storage-volume
               mountPath: /prometheus/
-#          resources:
-#            {{- toYaml .Values.resources.prometheus | nindent 12 }}
       volumes:
         - name: prometheus-config-volume
           configMap:

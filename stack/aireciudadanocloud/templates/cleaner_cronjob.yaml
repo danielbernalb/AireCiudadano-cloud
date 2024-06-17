@@ -17,8 +17,6 @@ spec:
             volumeMounts:
               - name: cleaner
                 mountPath: /config/
-#            resources:
-#              {{- toYaml .Values.resources.cleanercronjob | nindent 14 }}
           restartPolicy: OnFailure
           volumes:
           - name: cleaner

@@ -20,8 +20,6 @@ spec:
           volumeMounts:
             - name: mqttforward
               mountPath: /config/
-#          resources:
-#            {{- toYaml .Values.resources.mqttforward | nindent 12 }}
       volumes:
         - name: mqttforward
           configMap:

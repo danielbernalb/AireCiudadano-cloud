@@ -20,8 +20,6 @@ spec:
           volumeMounts:
             - name: apiserver
               mountPath: /config/
-#          resources:
-#            {{- toYaml .Values.resources.apiserver | nindent 12 }}
       volumes:
         - name: apiserver
           configMap:
