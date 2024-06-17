@@ -14,11 +14,13 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:10.4.3
+          image: grafana/grafana:10.4.4
           env:
           - name: GF_AUTH_ANONYMOUS_ENABLED
             value: "true"
           - name: GF_SECURITY_ALLOW_EMBEDDING
+            value: "true"
+          - name: GF_SERVER_ENABLE_GZIP
             value: "true"
           - name: GF_SECURITY_ADMIN_PASSWORD
             value: "{{ .Values.grafanaAdminPass }}"
@@ -62,8 +64,8 @@ spec:
             - name: grafana-config
               mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
               subPath: datasource.yaml
-          resources:
-            {{- toYaml .Values.resources.grafana | nindent 12 }}
+#          resources:
+#            {{- toYaml .Values.resources.grafana | nindent 12 }}
       volumes:
         - name: grafana-storage-volume
           hostPath:

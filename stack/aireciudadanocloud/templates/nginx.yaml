@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:1.26.0-alpine
+          image: nginx:1.27.0-alpine
           {{- if eq .Values.tls true }}
           command: ["sh"]
           args: ["-c","/scripts/run.sh"]
@@ -28,9 +28,9 @@ spec:
             - name: nginx-run
               mountPath: /scripts
             {{- end }}
-          resources:
-            {{- toYaml .Values.resources.nginx | nindent 12 }}
-            requests:
+#          resources:
+#            {{- toYaml .Values.resources.nginx | nindent 12 }}
+#            requests:
           ports:
           - containerPort: 1080
             hostPort: 1080

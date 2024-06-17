@@ -14,15 +14,15 @@ spec:
     spec:
       containers:
         - name: mqttbroker
-          image: eclipse-mosquitto:1.6.14
+          image: eclipse-mosquitto:1.6.15
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/
             - name: mqtt-config
               mountPath: /mosquitto/config/mosquitto.conf
               subPath: mosquitto.conf
-          resources:
-            {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
+#          resources:
+#            {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
         - name: mqtt-storage-volume
           hostPath:
