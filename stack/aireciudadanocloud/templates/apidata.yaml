@@ -16,17 +16,18 @@ spec:
         - name: apidata
           image: python
           command: ["/bin/bash"]
-          args: ["-c", "/config/run.sh"]
+          args: ["-c","/config/run.sh"]
           volumeMounts:
             - name: apidata
               mountPath: /config/
           resources:
+            # Ajuste de recursos según sea necesario
             requests:
               memory: "512Mi"
               cpu: "500m"
             limits:
               memory: "1Gi"
-              cpu: "1"
+              cpu: "900m"
       volumes:
         - name: apidata
           configMap:
@@ -42,9 +43,9 @@ spec:
   selector:
     app: apidata
   ports:
-  - protocol: TCP
-    port: 8080
-    nodePort: 30003
+    - protocol: TCP
+      port: 8080
+      nodePort: 30003
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -53,14 +54,15 @@ metadata:
 data:
   run.sh: |
     #!/bin/bash
+    pip install paho-mqtt
     pip install requests
     pip install pandas
     pip install numpy
+    cd /root/
     while ((1))
     do
       python /config/server.py
       echo "ERROR: Script failed"
-      sleep 10
     done
 
   server.py: |
@@ -72,14 +74,12 @@ data:
     import datetime
     import numpy as np
 
-    # Constants
     selected_cols = [
         "PM25", "PM25raw", "PM251", "PM252", "PM1", "CO2", "VOC", "NOx",
         "Humidity", "Temperature", "Noise", "NoisePeak", "RSSI", "Latitude",
         "Longitude", "InOut",
     ]
 
-    # Get data from API
     def get_data(url, selected_cols):
         try:
             data = requests.get(url).json()['data']['result']
@@ -117,7 +117,6 @@ data:
             print(f'Error in get_data: {str(e)}')
             raise
 
-    # Function to get wide table
     def _wide_table(df, selected_cols):
         try:
             df_result = pd.pivot(df, index=['station', 'date'], columns='metric_name', values='value').reset_index()
@@ -132,7 +131,6 @@ data:
             print(f'Pivot Error: {str(e)}')
             raise
 
-    # Constructor of the step value for time range queries
     def _get_step(number, choice):
         options = {"minutes": "m", "hours": "h", "days": "d", "weeks": "w", "years": "y"}
         return f"{number}{options[choice]}"
@@ -229,35 +227,19 @@ data:
                 start_datetime = f"{start_date}T{start_time}:00Z"
                 end_datetime = f"{end_date}T{end_time}:00Z"
 
-                if aggregation_method == 'average':
-                    step = '1m'
-                else:
+                if aggregation_method == 'step':
                     step = _get_step(step_number, step_option)
+                elif aggregation_method == 'average':
+                    step = f"avg_over_time({step_number}{step_option})"
 
-                base_url = "http://194.242.56.226:30000/api/v1"
-                query = '{job%3D"pushgateway"}'
-                url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+                url = f"http://grafana-np:3000/api/datasources/proxy/2/api/v1/query_range?query={urllib.parse.quote('[' + ', '.join(variables) + ']')}&start={start_datetime}&end={end_datetime}&step={step}"
 
                 try:
-                    obs = get_data(url, variables)
-                    if station_filter:
-                        filters = station_filter.split(',')
-                        obs = obs[obs['station'].str.contains('|'.join(filters), case=False)]
+                    df = get_data(url, selected_cols)
+                    total_records = df.shape[0]
+                    total_pages = int(np.ceil(total_records / page_size))
+                    json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
 
-                    if aggregation_method == 'average':
-                        obs['date'] = pd.to_datetime(obs['date'])
-                        resample_rule = f"{step_number}{step_option[0].upper()}"
-                        obs.set_index(['station', 'date'], inplace=True)
-
-                        obs = obs.apply(pd.to_numeric, errors='coerce')
-                        obs = obs.groupby('station').resample(resample_rule, level='date').mean().reset_index()
-                        obs['date'] = obs['date'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-                    total_records = obs.shape[0]
-                    total_pages = (total_records + page_size - 1) // page_size
-                    obs = obs.iloc[(page - 1) * page_size: page * page_size]
-
-                    json_data = obs.to_dict(orient='records')
                     for record in json_data:
                         for key, value in record.items():
                             if pd.isna(value):
