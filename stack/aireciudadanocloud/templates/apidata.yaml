@@ -23,11 +23,11 @@ spec:
           resources:
             # Ajuste de recursos según sea necesario
             requests:
-              memory: "800Mi"
-              cpu: "800m"
+              memory: "900Mi"
+              cpu: "900m"
             limits:
-              memory: "1.2Gi"
-              cpu: "1"
+              memory: "1.5Gi"
+              cpu: "950m"
       volumes:
         - name: apidata
           configMap:
