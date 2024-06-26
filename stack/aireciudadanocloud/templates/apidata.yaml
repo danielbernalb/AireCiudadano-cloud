@@ -200,6 +200,7 @@ data:
             return html_content
 
         def do_GET(self):
+            print(f"Received GET request for {self.path}")
             if self.path == '/getdata':
                 self._set_headers()
                 self.wfile.write(self._serve_html_form().encode('utf-8'))
@@ -207,6 +208,7 @@ data:
                 self.send_error(404, 'File Not Found: %s' % self.path)
 
         def do_POST(self):
+            print(f"Received POST request for {self.path}")
             if self.path == '/dataresult':
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
@@ -217,9 +219,9 @@ data:
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
                 end_time = params.get('end_time', ['10:00'])[0]
+                aggregation_method = params.get('aggregation_method', ['step'])[0]
                 step_number = params.get('step_number', ['1'])[0]
                 step_option = params.get('step_option', ['hours'])[0]
-                aggregation_method = params.get('aggregation_method', ['step'])[0]
                 station_filter = params.get('station_filter', [''])[0]
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
