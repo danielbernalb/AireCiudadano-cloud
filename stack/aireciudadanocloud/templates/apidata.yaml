@@ -247,8 +247,8 @@ data:
                     json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
 
                     for record in json_data:
-                        for key, value in record.items():
-                            if pd.isna(value):
+                        for key in record.keys():
+                            if pd.isna(record[key]):
                                 record[key] = None
 
                     grouped_data = {}
