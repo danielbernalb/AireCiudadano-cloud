@@ -73,6 +73,7 @@ data:
     import pandas as pd
     import datetime
     import numpy as np
+    from string import Template
 
     selected_cols = [
         "PM25", "PM25raw", "PM251", "PM252", "PM1", "CO2", "VOC", "NOx",
@@ -142,14 +143,14 @@ data:
             self.end_headers()
 
         def _serve_html_form(self):
-            html_content = '''
+            html_template = Template('''
             <html>
             <body>
             <form action="/dataresult" method="post">
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
-                {0}
+                $checkboxes
                 <br>
                 <label for="start_date">Start date/time:</label>
                 <input type="date" id="start_date" name="start_date" value="2024-05-09">
@@ -191,12 +192,12 @@ data:
             </script>
             </body>
             </html>
-            '''
+            ''')
             checkbox_html = ''.join(
                 [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
                  f'<label for="{col}">{col}</label><br>' for col in selected_cols]
             )
-            html_content = html_content.format(checkbox_html)
+            html_content = html_template.substitute(checkboxes=checkbox_html)
             return html_content
 
         def do_GET(self):
@@ -254,26 +255,32 @@ data:
                             grouped_data[station] = []
                         grouped_data[station].append(record)
 
-                    result = {
+                    response = {
                         'total_records': total_records,
                         'total_pages': total_pages,
                         'page': page,
                         'page_size': page_size,
-                        'data': grouped_data
+                        'data': grouped_data,
                     }
 
-                    self._set_headers('application/json')
-                    self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
+                    self._set_headers(content_type='application/json')
+                    self.wfile.write(json.dumps(response).encode('utf-8'))
+
                 except Exception as e:
-                    self.send_error(500, f"Error processing request: {str(e)}")
+                    print(f"Error processing data: {str(e)}")
+                    self.send_error(500, 'Internal Server Error')
             else:
                 self.send_error(404, 'File Not Found: %s' % self.path)
 
     def run(server_class=HTTPServer, handler_class=RequestHandler, port=8080):
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
-        print(f"Starting httpd server on port {port}")
+        print(f'Starting httpd server on port {port}')
         httpd.serve_forever()
 
-    if __name__ == "__main__":
-        run()
+    if __name__ == '__main__':
+        from sys import argv
+        if len(argv) == 2:
+            run(port=int(argv[1]))
+        else:
+            run()
