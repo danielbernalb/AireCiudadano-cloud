@@ -149,7 +149,7 @@ data:
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
-                {{'{{'}} checkboxes {{'}}'}}
+                {{{{ checkboxes }}}}
                 <br>
                 <label for="start_date">Start date/time:</label>
                 <input type="date" id="start_date" name="start_date" value="2024-05-09">
@@ -196,7 +196,7 @@ data:
                 [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
                  f'<label for="{col}">{col}</label><br>' for col in selected_cols]
             )
-            html_content = html_content.format(checkboxes=checkbox_html)
+            html_content = html_content.replace('{{{{ checkboxes }}}}', checkbox_html)
             return html_content
 
         def do_GET(self):
