@@ -144,60 +144,71 @@ data:
 
         def _serve_html_form(self):
             html_template = Template('''
-            <html>
-            <body>
-            <form action="/dataresult" method="post">
-                <label for="variables">Select variables:</label><br>
-                <input type="checkbox" id="select_all" onclick="toggle(this);">
-                <label for="select_all">Select/Deselect All</label><br>
-                $checkboxes
-                <br>
-                <label for="start_date">Start date/time:</label>
-                <input type="date" id="start_date" name="start_date" value="2024-05-09">
-                <label for="start_time"> / </label>
-                <input type="time" id="start_time" name="start_time" value="08:00"><br><br>
-                <label for="end_date">End date/time:</label>
-                <input type="date" id="end_date" name="end_date" value="2024-05-09">
-                <label for="end_time"> / </label>
-                <input type="time" id="end_time" name="end_time" value="10:00"><br><br>
-                <label for="aggregation_method">Aggregation method:</label>
-                <select id="aggregation_method" name="aggregation_method">
-                    <option value="step" selected>Step</option>
-                    <option value="average">Average</option>
-                </select><br><br>
-                <label for="step_number">Step/Average number:</label>
-                <input type="number" id="step_number" name="step_number" value="1">
-                <label for="step_option">Option:</label>
-                <select id="step_option" name="step_option">
-                    <option value="minutes">Minutes</option>
-                    <option value="hours" selected>Hours</option>
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                </select><br><br>
-                <label for="station_filter">Station Filter:</label>
-                <input type="text" id="station_filter" name="station_filter" value=""><br><br>
-                <label for="page">Page:</label>
-                <input type="number" id="page" name="page" value="1"><br><br>
-                <label for="page_size">Page Size:</label>
-                <input type="number" id="page_size" name="page_size" value="100"><br><br>
-                <input type="submit" value="Submit">
-            </form>
-            <script>
-                function toggle(source) {
-                    checkboxes = document.getElementsByName('variables');
-                    for (var i = 0; i < checkboxes.length; i++) {
-                        checkboxes[i].checked = source.checked;
-                    }
-                }
-            </script>
-            </body>
-            </html>
-            ''')
-            checkbox_html = ''.join(
-                [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
-                 f'<label for="{col}">{col}</label><br>' for col in selected_cols]
-            )
-            html_content = html_template.substitute(checkboxes=checkbox_html)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de datos</title>
+</head>
+<body>
+    <form action="/dataresult" method="post">
+        <label for="variables">Select variables:</label><br>
+        <input type="checkbox" id="select_all" onclick="toggle(this);">
+        <label for="select_all">Select/Deselect All</label><br>
+        $checkboxes
+        <br>
+        <label for="start_date">Start date/time:</label>
+        <input type="date" id="start_date" name="start_date" value="2024-05-09">
+        <label for="start_time"> / </label>
+        <input type="time" id="start_time" name="start_time" value="08:00"><br><br>
+        <label for="end_date">End date/time:</label>
+        <input type="date" id="end_date" name="end_date" value="2024-05-09">
+        <label for="end_time"> / </label>
+        <input type="time" id="end_time" name="end_time" value="10:00"><br><br>
+        <label for="aggregation_method">Aggregation method:</label>
+        <select id="aggregation_method" name="aggregation_method">
+            <option value="step" selected>Step</option>
+            <option value="average">Average</option>
+        </select><br><br>
+        <label for="step_number">Step/Average number:</label>
+        <input type="number" id="step_number" name="step_number" value="1">
+        <label for="step_option">Option:</label>
+        <select id="step_option" name="step_option">
+            <option value="minutes">Minutes</option>
+            <option value="hours" selected>Hours</option>
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+        </select><br><br>
+        <label for="station_filter">Station Filter:</label>
+        <input type="text" id="station_filter" name="station_filter" value=""><br><br>
+        <label for="page">Page:</label>
+        <input type="number" id="page" name="page" value="1"><br><br>
+        <label for="page_size">Page Size:</label>
+        <input type="number" id="page_size" name="page_size" value="100"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+        function toggle(source) {
+            checkboxes = document.getElementsByName('variables');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = source.checked;
+            }
+        }
+    </script>
+</body>
+</html>
+''')
+
+# Generar HTML para las casillas de verificación
+selected_cols = ["variable1", "variable2", "variable3"]  # Reemplaza esto con tus variables
+checkbox_html = ''.join(
+    [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
+     f'<label for="{col}">{col}</label><br>' for col in selected_cols]
+)
+
+# Sustituir el marcador de posición en la plantilla
+html_content = html_template.substitute(checkboxes=checkbox_html)
             return html_content
 
         def do_GET(self):
