@@ -149,7 +149,7 @@ data:
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
-                {{checkboxes}}
+                {{'{{'}} checkboxes {{'}}'}}
                 <br>
                 <label for="start_date">Start date/time:</label>
                 <input type="date" id="start_date" name="start_date" value="2024-05-09">
