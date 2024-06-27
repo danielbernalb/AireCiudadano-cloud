@@ -235,7 +235,6 @@ data:
                 elif aggregation_method == 'average':
                     step = f"avg_over_time({step_number}{step_option})"
 
-#                url = f"http://grafana-np:3000/api/datasources/proxy/2/api/v1/query_range?query={urllib.parse.quote('[' + ', '.join(variables) + ']')}&start={start_datetime}&end={end_datetime}&step={step}"
                 base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job%3D"pushgateway"}'
                 url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
