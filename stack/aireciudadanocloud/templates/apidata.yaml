@@ -195,13 +195,8 @@ data:
             </script>
             </body>
             </html>
-            ''')
-            checkbox_html = ''.join(
-                [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
-                 f'<label for="{col}">{col}</label><br>' for col in selected_cols]
-            )
-            html_content = html_template.substitute(checkboxes=checkbox_html)
-            return html_content
+            '''), selected_cols=selected_cols, variables=variables, start_date=start_date, start_time=start_time,
+                end_date=end_date, end_time=end_time, step_number=step_number, step_option=step_option, aggregation_method=aggregation_method)
 
         def do_GET(self):
             print(f"Received GET request for {self.path}")
