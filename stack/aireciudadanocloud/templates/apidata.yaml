@@ -23,11 +23,11 @@ spec:
           resources:
             # Ajuste de recursos según sea necesario
             requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
+              memory: "900Mi"
               cpu: "900m"
+            limits:
+              memory: "1.5Gi"
+              cpu: "1.2"
       volumes:
         - name: apidata
           configMap:
@@ -258,6 +258,7 @@ data:
                         grouped_data[station].append(record)
 
                     response = {
+                        'total_records': total_records,
                         'total_pages': total_pages,
                         'page': page,
                         'page_size': page_size,
