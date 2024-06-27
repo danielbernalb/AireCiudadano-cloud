@@ -23,11 +23,11 @@ spec:
           resources:
             # Ajuste de recursos según sea necesario
             requests:
-              memory: "900Mi"
-              cpu: "900m"
+              memory: "512Mi"
+              cpu: "500m"
             limits:
-              memory: "1.5Gi"
-              cpu: "950m"
+              memory: "1Gi"
+              cpu: "900m"
       volumes:
         - name: apidata
           configMap:
@@ -73,7 +73,6 @@ data:
     import pandas as pd
     import datetime
     import numpy as np
-    from string import Template
 
     selected_cols = [
         "PM25", "PM25raw", "PM251", "PM252", "PM1", "CO2", "VOC", "NOx",
@@ -143,20 +142,14 @@ data:
             self.end_headers()
 
         def _serve_html_form(self):
-            html_template = Template('''
-            <!DOCTYPE html>
+            html_content = '''
             <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Formulario de datos</title>
-            </head>
             <body>
             <form action="/dataresult" method="post">
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
-                $checkboxes
+                {0}
                 <br>
                 <label for="start_date">Start date/time:</label>
                 <input type="date" id="start_date" name="start_date" value="2024-05-09">
@@ -198,16 +191,12 @@ data:
             </script>
             </body>
             </html>
-            ''')
-
-            # Generar HTML para las casillas de verificación
+            '''
             checkbox_html = ''.join(
                 [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
                  f'<label for="{col}">{col}</label><br>' for col in selected_cols]
             )
-
-            # Sustituir el marcador de posición en la plantilla
-            html_content = html_template.substitute(checkboxes=checkbox_html)
+            html_content = html_content.format(checkbox_html)
             return html_content
 
         def do_GET(self):
@@ -245,10 +234,7 @@ data:
                 elif aggregation_method == 'average':
                     step = f"avg_over_time({step_number}{step_option})"
 
-                base_url = "http://194.242.56.226:30000/api/v1"
-#                base_url = "http://sensor.aireciudadano.com:30000/api/v1"
-                query = '{job%3D"pushgateway"}'
-                url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+                url = f"http://grafana-np:3000/api/datasources/proxy/2/api/v1/query_range?query={urllib.parse.quote('[' + ', '.join(variables) + ']')}&start={start_datetime}&end={end_datetime}&step={step}"
 
                 try:
                     df = get_data(url, selected_cols)
@@ -257,8 +243,8 @@ data:
                     json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
 
                     for record in json_data:
-                        for key in record.keys():
-                            if pd.isna(record[key]):
+                        for key, value in record.items():
+                            if pd.isna(value):
                                 record[key] = None
 
                     grouped_data = {}
@@ -268,33 +254,26 @@ data:
                             grouped_data[station] = []
                         grouped_data[station].append(record)
 
-                    response = {
+                    result = {
                         'total_records': total_records,
                         'total_pages': total_pages,
                         'page': page,
                         'page_size': page_size,
-                        'data': grouped_data,
+                        'data': grouped_data
                     }
 
-                    self._set_headers(content_type='application/json')
-                    self.wfile.write(json.dumps(response).encode('utf-8'))
-
+                    self._set_headers('application/json')
+                    self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
                 except Exception as e:
-                    print(f"Error processing data: {str(e)}")
-                    self.send_error(500, 'Internal Server Error')
+                    self.send_error(500, f"Error processing request: {str(e)}")
             else:
                 self.send_error(404, 'File Not Found: %s' % self.path)
 
     def run(server_class=HTTPServer, handler_class=RequestHandler, port=8080):
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
-        print(f'Starting httpd server on port {port}')
+        print(f"Starting httpd server on port {port}")
         httpd.serve_forever()
 
-    if __name__ == '__main__':
-        from sys import argv
-        if len(argv) == 2:
-            run(port=int(argv[1]))
-        else:
-            run()
-
+    if __name__ == "__main__":
+        run()
