@@ -150,7 +150,10 @@ data:
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
-                $checkboxes
+                {% for col in selected_cols %}
+                    <input type="checkbox" id="{{ col }}" name="variables" value="{{ col }}" {% if col in variables %}checked{% endif %}>
+                    <label for="{{ col }}">{{ col }}</label><br>
+                {% endfor %}
                 <br>
                 <label for="start_date">Start date/time:</label>
                 <input type="date" id="start_date" name="start_date" value="2024-05-09">
