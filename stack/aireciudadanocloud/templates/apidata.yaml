@@ -230,7 +230,7 @@ data:
                 station_filter = params.get('station_filter', [''])[0].strip()
 
                 # Dividir el filtro en palabras individuales
-                filter_words = [word.strip() for word in re.split(r'[,\s]+', station_filter) if word.strip()]
+                filter_words = [word.strip().lower() for word in station_filter.split() if word.strip()]
 
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
@@ -252,10 +252,10 @@ data:
             
                     # Aplicar el filtro de estaciones si se proporciona
                     if filter_words:
-                        mask = df['station'].str.contains(filter_words[0], case=False, na=False)
-                        for word in filter_words[1:]:
-                            mask &= df['station'].str.contains(word, case=False, na=False)
+                        df['station_lower'] = df['station'].str.lower()
+                        mask = df['station_lower'].apply(lambda x: all(word in x for word in filter_words))
                         df = df[mask]
+                        df = df.drop('station_lower', axis=1)
 
                     total_records = df.shape[0]
                     total_pages = int(np.ceil(total_records / page_size))
