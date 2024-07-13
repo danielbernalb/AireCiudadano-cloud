@@ -15,8 +15,7 @@ spec:
       containers:
         - name: apidata
           image: python
-          command: ["/bin/bash"]
-          args: ["-c","/config/run.sh"]
+          command: ["/bin/bash", "-c", "/config/run.sh"]
           volumeMounts:
             - name: apidata
               mountPath: /config/
