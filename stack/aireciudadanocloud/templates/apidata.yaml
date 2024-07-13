@@ -73,6 +73,7 @@ data:
     import pandas as pd
     import datetime
     import numpy as np
+    import re
     from string import Template
 
     selected_cols = [
@@ -227,6 +228,10 @@ data:
                 step_number = params.get('step_number', ['1'])[0]
                 step_option = params.get('step_option', ['hours'])[0]
                 station_filter = params.get('station_filter', [''])[0].strip()
+
+                # Dividir el filtro en palabras individuales
+                filter_words = [word.strip() for word in re.split(r'[,\s]+', station_filter) if word.strip()]
+
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
 
@@ -246,9 +251,12 @@ data:
                     df = get_data(url, variables)
             
                     # Aplicar el filtro de estaciones si se proporciona
-                    if station_filter:
-                        df = df[df['station'].str.contains(station_filter, case=False, na=False)]
-            
+                    if filter_words:
+                        mask = df['station'].str.contains(filter_words[0], case=False, na=False)
+                        for word in filter_words[1:]:
+                            mask &= df['station'].str.contains(word, case=False, na=False)
+                        df = df[mask]
+
                     total_records = df.shape[0]
                     total_pages = int(np.ceil(total_records / page_size))
                     json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
