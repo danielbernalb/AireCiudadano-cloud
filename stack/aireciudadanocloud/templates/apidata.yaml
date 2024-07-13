@@ -226,7 +226,7 @@ data:
                 aggregation_method = params.get('aggregation_method', ['step'])[0]
                 step_number = params.get('step_number', ['1'])[0]
                 step_option = params.get('step_option', ['hours'])[0]
-                station_filter = params.get('station_filter', [''])[0]
+                station_filter = params.get('station_filter', [''])[0].strip()
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
 
@@ -244,6 +244,11 @@ data:
 
                 try:
                     df = get_data(url, variables)
+            
+                    # Aplicar el filtro de estaciones si se proporciona
+                    if station_filter:
+                        df = df[df['station'].str.contains(station_filter, case=False, na=False)]
+            
                     total_records = df.shape[0]
                     total_pages = int(np.ceil(total_records / page_size))
                     json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
