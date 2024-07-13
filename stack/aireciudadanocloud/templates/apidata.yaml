@@ -83,8 +83,8 @@ data:
 
     def get_data(url, variables):
         try:
-#            data = requests.get(url).json()['data']
-            data = requests.get(url).json()['data']['result']
+            data = requests.get(url).json()['data']
+#            data = requests.get(url).json()['data']['result']
 
             if 'result' in data:
                 # Para query_range
