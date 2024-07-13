@@ -1,4 +1,71 @@
-  server.py: |
+  apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apidata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apidata
+  template:
+    metadata:
+      labels:
+        app: apidata
+    spec:
+      containers:
+        - name: apidata
+          image: python
+          command: ["/bin/bash"]
+          args: ["-c","/config/run.sh"]
+          volumeMounts:
+            - name: apidata
+              mountPath: /config/
+          resources:
+            # Ajuste de recursos según sea necesario
+            requests:
+              memory: "500Mi"
+              cpu: "300m"
+            limits:
+              memory: "700Mi"
+              cpu: "500m"
+      volumes:
+        - name: apidata
+          configMap:
+            name: apidata
+            defaultMode: 0777
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apidata-np
+spec:
+  type: NodePort
+  selector:
+    app: apidata
+  ports:
+    - protocol: TCP
+      port: 8080
+      nodePort: 30003
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: apidata
+data:
+  run.sh: |
+    #!/bin/bash
+    pip install paho-mqtt
+    pip install requests
+    pip install pandas
+    pip install numpy
+    cd /root/
+    while ((1))
+    do
+      python /config/server.py
+      echo "ERROR: Script failed"
+    done
+
+server.py: |
     from http.server import BaseHTTPRequestHandler, HTTPServer
     import urllib.parse
     import json
@@ -147,9 +214,11 @@
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 params = urllib.parse.parse_qs(post_data.decode('utf-8'))
+
                 variables = params.get('variables', [])
                 if not variables:
                     variables = selected_cols
+
                 start_date = params.get('start_date', ['2024-05-09'])[0]
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
