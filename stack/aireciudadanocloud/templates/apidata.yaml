@@ -74,6 +74,9 @@ data:
     import numpy as np
     import re
     from string import Template
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG)
 
     selected_cols = [
         "PM25", "PM25raw", "PM251", "PM252", "PM1", "CO2", "VOC", "NOx",
@@ -83,11 +86,24 @@ data:
 
     def get_data(url, variables):
         try:
-            data = requests.get(url).json()['data']['result']
+            logging.debug(f"Requesting data from URL: {url}")
+            response = requests.get(url)
+            logging.debug(f"Response status code: {response.status_code}")
+            response.raise_for_status()
+            data = response.json()
+            logging.debug(f"Data received: {str(data)[:100]}...")  # Log first 100 characters
 
-            if 'result' in data:
-                # Para query_range
-                df = pd.json_normalize(data['result'])
+            if 'data' not in data or 'result' not in data['data']:
+                raise ValueError(f"Unexpected data structure: {data}")
+            
+            result = data['data']['result']
+            
+            if not result:
+                return pd.DataFrame()  # Return an empty DataFrame if no results
+
+            if isinstance(result, list):
+                # For query_range
+                df = pd.json_normalize(result)
                 if 'values' in df.columns:
                     df = df.explode('values')
                     df['date'] = df['values'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
@@ -96,20 +112,25 @@ data:
                 elif 'value' in df.columns:
                     df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
                     df['value'] = df['value'].apply(lambda x: x[1])
+            elif isinstance(result, dict):
+                # For query (average)
+                df = pd.DataFrame([result])
+                df['date'] = datetime.datetime.utcfromtimestamp(result['value'][0]).isoformat()
+                df['value'] = result['value'][1]
             else:
-                # Para query (promedio)
-                df = pd.DataFrame(data['result'])
-                df['date'] = datetime.datetime.utcfromtimestamp(data['result'][0]['value'][0]).isoformat()
-                df['value'] = df['value'].apply(lambda x: x[1])
+                raise ValueError(f"Unexpected result structure: {result}")
 
-            df = df.rename(columns={"metric.__name__": "metric_name", "metric.exported_job": "station"})
+            df = df.rename(columns={
+                "metric.__name__": "metric_name",
+                "metric.exported_job": "station",
+            })
 
             df = df.drop(columns=[col for col in df.columns if "metric." in col]).reset_index(drop=True)
             df = df[df['station'].notnull()]
 
             df_result = _wide_table(df, variables)
 
-            for col in selected_cols:
+            for col in variables:
                 if col in df_result.columns:
                     df_result[col] = df_result[col].astype(float)
             if 'Latitude' in df_result.columns:
@@ -118,8 +139,14 @@ data:
                 df_result['Longitude'].replace(0, np.nan, inplace=True)
 
             return df_result
+        except requests.RequestException as e:
+            logging.error(f"Request failed: {e}", exc_info=True)
+            raise
+        except ValueError as e:
+            logging.error(f"Data processing error: {e}", exc_info=True)
+            raise
         except Exception as e:
-            print(f'Error in get_data: {str(e)}')
+            logging.error(f"Unexpected error: {e}", exc_info=True)
             raise
 
     def _wide_table(df, variables):
@@ -133,7 +160,7 @@ data:
             df_result.columns.name = ""
             return df_result
         except Exception as e:
-            print(f'Pivot Error: {str(e)}')
+            logging.error(f'Pivot Error: {str(e)}', exc_info=True)
             raise
 
     def _get_step(number, choice):
@@ -199,13 +226,13 @@ data:
             ''')
             checkbox_html = ''.join(
                 [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
-                 f'<label for="{col}">{col}</label><br>' for col in selected_cols]
+                f'<label for="{col}">{col}</label><br>' for col in selected_cols]
             )
             html_content = html_template.substitute(checkboxes=checkbox_html)
             return html_content
 
         def do_GET(self):
-            print(f"Received GET request for {self.path}")
+            logging.info(f"Received GET request for {self.path}")
             if self.path == '/getdata':
                 self._set_headers()
                 self.wfile.write(self._serve_html_form().encode('utf-8'))
@@ -213,7 +240,7 @@ data:
                 self.send_error(404, 'File Not Found: %s' % self.path)
 
         def do_POST(self):
-            print(f"Received POST request for {self.path}")
+            logging.info(f"Received POST request for {self.path}")
             if self.path == '/dataresult':
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
@@ -232,7 +259,7 @@ data:
                 step_option = params.get('step_option', ['hours'])[0]
                 station_filter = params.get('station_filter', [''])[0].strip()
 
-                # Dividir el filtro en palabras individuales
+                # Split the filter into individual words
                 filter_words = [word.strip().lower() for word in station_filter.split() if word.strip()]
 
                 page = int(params.get('page', ['1'])[0])
@@ -241,11 +268,6 @@ data:
                 start_datetime = f"{start_date}T{start_time}:00Z"
                 end_datetime = f"{end_date}T{end_time}:00Z"
 
-                if aggregation_method == 'step':
-                    step = _get_step(step_number, step_option)
-                elif aggregation_method == 'average':
-                    step = f"avg_over_time({step_number}{step_option})"
-
                 base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job%3D"pushgateway"}'
 
@@ -253,56 +275,67 @@ data:
                     step = _get_step(step_number, step_option)
                     url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
                 elif aggregation_method == 'average':
-                    range = f"[{step_number}{step_option[0]}]"  # e.g., [1h] for 1 hour
-                    url = f"{base_url}/query?query=avg_over_time({query}{range})&time={end_datetime}"
+                    range = f"[{step_number}{step_option[0]}]"
+                    url = f"{base_url}/query?query=avg_over_time({query}{range})&start={start_datetime}&end={end_datetime}"
+
+                logging.debug(f"Constructed URL: {url}")
 
                 try:
                     df = get_data(url, variables)
-            
-                    # Aplicar el filtro de estaciones si se proporciona
-                    if filter_words:
-                        df['station_lower'] = df['station'].str.lower()
-                        mask = df['station_lower'].apply(lambda x: all(word in x for word in filter_words))
-                        df = df[mask]
-                        df = df.drop('station_lower', axis=1)
 
-                    total_records = df.shape[0]
-                    total_pages = int(np.ceil(total_records / page_size))
-                    json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
+                    if df.empty:
+                        response = {
+                            'total_records': 0,
+                            'total_pages': 0,
+                            'page': page,
+                            'page_size': page_size,
+                            'data': {},
+                        }
+                    else:
+                        # Apply the station filter if provided
+                        if filter_words:
+                            df['station_lower'] = df['station'].str.lower()
+                            mask = df['station_lower'].apply(lambda x: all(word in x for word in filter_words))
+                            df = df[mask]
+                            df = df.drop('station_lower', axis=1)
 
-                    for record in json_data:
-                        for key in record.keys():
-                            if pd.isna(record[key]):
-                                record[key] = None
+                        total_records = df.shape[0]
+                        total_pages = int(np.ceil(total_records / page_size))
+                        json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
 
-                    grouped_data = {}
-                    for record in json_data:
-                        station = record.pop('station')
-                        if station not in grouped_data:
-                            grouped_data[station] = []
-                        grouped_data[station].append(record)
+                        for record in json_data:
+                            for key in record.keys():
+                                if pd.isna(record[key]):
+                                    record[key] = None
 
-                    response = {
-                        'total_records': total_records,
-                        'total_pages': total_pages,
-                        'page': page,
-                        'page_size': page_size,
-                        'data': grouped_data,
-                    }
+                        grouped_data = {}
+                        for record in json_data:
+                            station = record.pop('station')
+                            if station not in grouped_data:
+                                grouped_data[station] = []
+                            grouped_data[station].append(record)
+
+                        response = {
+                            'total_records': total_records,
+                            'total_pages': total_pages,
+                            'page': page,
+                            'page_size': page_size,
+                            'data': grouped_data,
+                        }
 
                     self._set_headers(content_type='application/json')
                     self.wfile.write(json.dumps(response).encode('utf-8'))
 
                 except Exception as e:
-                    print(f"Error processing data: {str(e)}")
-                    self.send_error(500, 'Internal Server Error')
+                    logging.error(f"Error processing data: {str(e)}", exc_info=True)
+                    self.send_error(500, f'Internal Server Error: {str(e)}')
             else:
                 self.send_error(404, 'File Not Found: %s' % self.path)
 
     def run(server_class=HTTPServer, handler_class=RequestHandler, port=8080):
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
-        print(f'Starting httpd server on port {port}')
+        logging.info(f'Starting httpd server on port {port}')
         httpd.serve_forever()
 
     if __name__ == '__main__':
