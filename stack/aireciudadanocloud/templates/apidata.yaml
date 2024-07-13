@@ -85,15 +85,22 @@ data:
     def get_data(url, variables):
         try:
             data = requests.get(url).json()['data']['result']
-            df = pd.json_normalize(data)
 
-            if 'values' in df.columns:
-                df = df.explode('values')
-                df['date'] = df['values'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
-                df['value'] = df['values'].apply(lambda x: x[1])
-                df = df.drop(columns="values")
-            elif 'value' in df.columns:
-                df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
+            if 'result' in data:
+                # Para query_range
+                df = pd.json_normalize(data['result'])
+                if 'values' in df.columns:
+                    df = df.explode('values')
+                    df['date'] = df['values'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
+                    df['value'] = df['values'].apply(lambda x: x[1])
+                    df = df.drop(columns="values")
+                elif 'value' in df.columns:
+                    df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
+                    df['value'] = df['value'].apply(lambda x: x[1])
+            else:
+                # Para query (promedio)
+                df = pd.DataFrame(data['result'])
+                df['date'] = datetime.datetime.utcfromtimestamp(data['result'][0]['value'][0]).isoformat()
                 df['value'] = df['value'].apply(lambda x: x[1])
 
             df = df.rename(columns={
@@ -245,7 +252,13 @@ data:
 
                 base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job%3D"pushgateway"}'
-                url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+
+                if aggregation_method == 'step':
+                    step = _get_step(step_number, step_option)
+                    url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+                elif aggregation_method == 'average':
+                    range = f"[{step_number}{step_option[0]}]"  # e.g., [1h] for 1 hour
+                    url = f"{base_url}/query?query=avg_over_time({query}{range})&time={end_datetime}"
 
                 try:
                     df = get_data(url, variables)
