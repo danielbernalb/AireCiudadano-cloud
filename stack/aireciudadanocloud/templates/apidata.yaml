@@ -1,70 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: apidata
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: apidata
-  template:
-    metadata:
-      labels:
-        app: apidata
-    spec:
-      containers:
-        - name: apidata
-          image: python
-          command: ["/bin/bash"]
-          args: ["-c","/config/run.sh"]
-          volumeMounts:
-            - name: apidata
-              mountPath: /config/
-          resources:
-            # Ajuste de recursos según sea necesario
-            requests:
-              memory: "500Mi"
-              cpu: "300m"
-            limits:
-              memory: "700Mi"
-              cpu: "500m"
-      volumes:
-        - name: apidata
-          configMap:
-            name: apidata
-            defaultMode: 0777
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: apidata-np
-spec:
-  type: NodePort
-  selector:
-    app: apidata
-  ports:
-    - protocol: TCP
-      port: 8080
-      nodePort: 30003
----
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: apidata
-data:
-  run.sh: |
-    #!/bin/bash
-    pip install paho-mqtt
-    pip install requests
-    pip install pandas
-    pip install numpy
-    cd /root/
-    while ((1))
-    do
-      python /config/server.py
-      echo "ERROR: Script failed"
-    done
-
   server.py: |
     from http.server import BaseHTTPRequestHandler, HTTPServer
     import urllib.parse
@@ -81,7 +14,7 @@ data:
         "Longitude", "InOut",
     ]
 
-    def get_data(url, selected_cols):
+    def get_data(url, variables):
         try:
             data = requests.get(url).json()['data']['result']
             df = pd.json_normalize(data)
@@ -103,7 +36,7 @@ data:
             df = df.drop(columns=[col for col in df.columns if "metric." in col]).reset_index(drop=True)
             df = df[df['station'].notnull()]
 
-            df_result = _wide_table(df, selected_cols)
+            df_result = _wide_table(df, variables)
 
             for col in selected_cols:
                 if col in df_result.columns:
@@ -118,10 +51,10 @@ data:
             print(f'Error in get_data: {str(e)}')
             raise
 
-    def _wide_table(df, selected_cols):
+    def _wide_table(df, variables):
         try:
             df_result = pd.pivot(df, index=['station', 'date'], columns='metric_name', values='value').reset_index()
-            all_cols = ['station', 'date'] + selected_cols
+            all_cols = ['station', 'date'] + variables
             missing_cols = set(all_cols) - set(df_result.columns)
             for col in missing_cols:
                 df_result[col] = np.nan
@@ -214,12 +147,9 @@ data:
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 params = urllib.parse.parse_qs(post_data.decode('utf-8'))
-
-                # Parse the selected variables from the form data
                 variables = params.get('variables', [])
                 if not variables:
                     variables = selected_cols
-
                 start_date = params.get('start_date', ['2024-05-09'])[0]
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
@@ -244,7 +174,7 @@ data:
                 url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
 
                 try:
-                    df = get_data(url, selected_cols)
+                    df = get_data(url, variables)
                     total_records = df.shape[0]
                     total_pages = int(np.ceil(total_records / page_size))
                     json_data = df.iloc[(page - 1) * page_size: page * page_size].to_dict(orient='records')
