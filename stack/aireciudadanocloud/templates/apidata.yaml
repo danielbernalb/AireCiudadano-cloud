@@ -1,4 +1,4 @@
-  apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: apidata
@@ -65,7 +65,7 @@ data:
       echo "ERROR: Script failed"
     done
 
-server.py: |
+ server.py: |
     from http.server import BaseHTTPRequestHandler, HTTPServer
     import urllib.parse
     import json
