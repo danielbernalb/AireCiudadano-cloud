@@ -83,8 +83,7 @@ data:
 
     def get_data(url, variables):
         try:
-            data = requests.get(url).json()['data']
-#            data = requests.get(url).json()['data']['result']
+            data = requests.get(url).json()['data']['result']
 
             if 'result' in data:
                 # Para query_range
@@ -103,10 +102,7 @@ data:
                 df['date'] = datetime.datetime.utcfromtimestamp(data['result'][0]['value'][0]).isoformat()
                 df['value'] = df['value'].apply(lambda x: x[1])
 
-            df = df.rename(columns={
-                "metric.__name__": "metric_name",
-                "metric.exported_job": "station",
-            })
+            df = df.rename(columns={"metric.__name__": "metric_name", "metric.exported_job": "station"})
 
             df = df.drop(columns=[col for col in df.columns if "metric." in col]).reset_index(drop=True)
             df = df[df['station'].notnull()]
