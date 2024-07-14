@@ -269,7 +269,6 @@ data:
                 end_datetime = f"{end_date}T{end_time}:00Z"
 
                 base_url = "http://194.242.56.226:30000/api/v1"
-#                query = '{job%3D"pushgateway"}'
                 query = '{job="pushgateway"}'
 
                 if aggregation_method == 'step':
