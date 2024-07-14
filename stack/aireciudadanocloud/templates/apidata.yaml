@@ -71,6 +71,7 @@ data:
     import logging
     import urllib.parse
     import requests
+    import json
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
     logging.basicConfig(level=logging.DEBUG)
@@ -340,13 +341,12 @@ data:
     def run(server_class=HTTPServer, handler_class=RequestHandler, port=8080):
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
-        logging.info(f'Starting httpd on port {port}...')
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            pass
-        httpd.server_close()
-        logging.info('Stopping httpd...')
+        logging.info(f'Starting httpd server on port {port}')
+        httpd.serve_forever()
 
     if __name__ == '__main__':
-        run()
+        from sys import argv
+        if len(argv) == 2:
+            run(port=int(argv[1]))
+        else:
+            run()
