@@ -269,11 +269,12 @@ data:
                 end_datetime = f"{end_date}T{end_time}:00Z"
 
                 base_url = "http://194.242.56.226:30000/api/v1"
-                query = '{job%3D"pushgateway"}'
+#                query = '{job%3D"pushgateway"}'
+                query = '{job="pushgateway"}'
 
                 if aggregation_method == 'step':
                     step = _get_step(step_number, step_option)
-                    url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+                    url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step={step}"
                 elif aggregation_method == 'average':
                     range = "1m"  # Fixed 1 minute range for average
                     query_avg = f"avg_over_time({query}[{range}])"
