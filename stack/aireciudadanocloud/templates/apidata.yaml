@@ -73,6 +73,7 @@ data:
     import requests
     import json
     from http.server import BaseHTTPRequestHandler, HTTPServer
+    from string import Template
 
     logging.basicConfig(level=logging.DEBUG)
 
