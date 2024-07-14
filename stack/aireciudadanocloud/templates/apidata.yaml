@@ -232,7 +232,7 @@ data:
             ''')
             checkbox_html = ''.join(
                 [f'<input type="checkbox" id="{col}" name="variables" value="{col}" checked>'
-                f'<label for="{col}">{col}</label><br>' for col in selected_cols]
+                 f'<label for="{col}">{col}</label><br>' for col in selected_cols]
             )
             html_content = html_template.substitute(checkboxes=checkbox_html)
             return html_content
