@@ -275,9 +275,10 @@ data:
                     step = _get_step(step_number, step_option)
                     url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
                 elif aggregation_method == 'average':
-                    range = "[1m]"  # Fixed 1 minute range for average
+                    range = "1m"  # Fixed 1 minute range for average
                     query_avg = f"avg_over_time({query}[{range}])"
-                    url = f"{base_url}/query_range?query={urllib.parse.quote(query_avg)}&start={start_datetime}&end={end_datetime}&step={range}"
+                    step = _get_step(step_number, step_option)
+                    url = f"{base_url}/query_range?query={urllib.parse.quote(query_avg)}&start={start_datetime}&end={end_datetime}&step={step}"
 
                 logging.debug(f"Constructed URL: {url}")
 
