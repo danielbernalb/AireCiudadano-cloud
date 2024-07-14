@@ -65,16 +65,13 @@ data:
     done
 
   server.py: |
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-    import urllib.parse
-    import json
-    import requests
     import pandas as pd
     import datetime
     import numpy as np
-    import re
-    from string import Template
     import logging
+    import urllib.parse
+    import requests
+    from http.server import BaseHTTPRequestHandler, HTTPServer
 
     logging.basicConfig(level=logging.DEBUG)
 
@@ -102,7 +99,6 @@ data:
                 return pd.DataFrame()  # Return an empty DataFrame if no results
 
             if isinstance(result, list):
-                # For query_range
                 df = pd.json_normalize(result)
                 if 'values' in df.columns:
                     df = df.explode('values')
@@ -113,7 +109,6 @@ data:
                     df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
                     df['value'] = df['value'].apply(lambda x: x[1])
             elif isinstance(result, dict):
-                # For query (average)
                 df = pd.DataFrame([result])
                 df['date'] = datetime.datetime.utcfromtimestamp(result['value'][0]).isoformat()
                 df['value'] = result['value'][1]
@@ -166,6 +161,17 @@ data:
     def _get_step(number, choice):
         options = {"minutes": "m", "hours": "h", "days": "d", "weeks": "w", "years": "y"}
         return f"{number}{options[choice]}"
+
+    def _resample_and_average(df, step, step_unit):
+        try:
+            df['date'] = pd.to_datetime(df['date'])
+            df.set_index('date', inplace=True)
+            df = df.resample(f'{step}{step_unit[0].upper()}').mean()
+            df.reset_index(inplace=True)
+            return df
+        except Exception as e:
+            logging.error(f'Resample and average error: {str(e)}', exc_info=True)
+            raise
 
     class RequestHandler(BaseHTTPRequestHandler):
         def _set_headers(self, content_type='text/html'):
@@ -254,35 +260,29 @@ data:
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
                 end_time = params.get('end_time', ['10:00'])[0]
+                start_datetime = f"{start_date}T{start_time}Z"
+                end_datetime = f"{end_date}T{end_time}Z"
                 aggregation_method = params.get('aggregation_method', ['step'])[0]
-                step_number = params.get('step_number', ['1'])[0]
+                step_number = int(params.get('step_number', ['1'])[0])
                 step_option = params.get('step_option', ['hours'])[0]
                 station_filter = params.get('station_filter', [''])[0].strip()
-
-                # Split the filter into individual words
-                filter_words = [word.strip().lower() for word in station_filter.split() if word.strip()]
-
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
 
-                start_datetime = f"{start_date}T{start_time}:00Z"
-                end_datetime = f"{end_date}T{end_time}:00Z"
+                filter_words = station_filter.lower().split() if station_filter else []
 
                 base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job="pushgateway"}'
 
-                if aggregation_method == 'step':
-                    step = _get_step(step_number, step_option)
-                    url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step={step}"
-                elif aggregation_method == 'average':
-                    range = "1m"  # Fixed 1 minute range for average
-                    query_avg = f"avg_over_time({query}[{range}])"
-                    step = _get_step(step_number, step_option)
-                    url = f"{base_url}/query_range?query={urllib.parse.quote(query_avg)}&start={start_datetime}&end={end_datetime}&step={step}"
-
-                logging.debug(f"Constructed URL: {url}")
-
                 try:
+                    if aggregation_method == 'step':
+                        step = _get_step(step_number, step_option)
+                        url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step={step}"
+                    elif aggregation_method == 'average':
+                        url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step=1m"
+
+                    logging.debug(f"Constructed URL: {url}")
+
                     df = get_data(url, variables)
 
                     if df.empty:
@@ -294,6 +294,9 @@ data:
                             'data': {},
                         }
                     else:
+                        if aggregation_method == 'average':
+                            df = _resample_and_average(df, step_number, step_option)
+
                         # Apply the station filter if provided
                         if filter_words:
                             df['station_lower'] = df['station'].str.lower()
@@ -337,12 +340,13 @@ data:
     def run(server_class=HTTPServer, handler_class=RequestHandler, port=8080):
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
-        logging.info(f'Starting httpd server on port {port}')
-        httpd.serve_forever()
+        logging.info(f'Starting httpd on port {port}...')
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        httpd.server_close()
+        logging.info('Stopping httpd...')
 
     if __name__ == '__main__':
-        from sys import argv
-        if len(argv) == 2:
-            run(port=int(argv[1]))
-        else:
-            run()
+        run()
