@@ -262,29 +262,35 @@ data:
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
                 end_time = params.get('end_time', ['10:00'])[0]
-                start_datetime = f"{start_date}T{start_time}Z"
-                end_datetime = f"{end_date}T{end_time}Z"
                 aggregation_method = params.get('aggregation_method', ['step'])[0]
-                step_number = int(params.get('step_number', ['1'])[0])
+                step_number = params.get('step_number', ['1'])[0]
                 step_option = params.get('step_option', ['hours'])[0]
                 station_filter = params.get('station_filter', [''])[0].strip()
+
+                # Split the filter into individual words
+                filter_words = [word.strip().lower() for word in station_filter.split() if word.strip()]
+
                 page = int(params.get('page', ['1'])[0])
                 page_size = int(params.get('page_size', ['100'])[0])
 
-                filter_words = station_filter.lower().split() if station_filter else []
+                start_datetime = f"{start_date}T{start_time}:00Z"
+                end_datetime = f"{end_date}T{end_time}:00Z"
 
                 base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job="pushgateway"}'
 
+                if aggregation_method == 'step':
+                    step = _get_step(step_number, step_option)
+                    url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
+                elif aggregation_method == 'average':
+                    range = "1m"  # Fixed 1 minute range for average
+                    query_avg = f"avg_over_time({query}[{range}])"
+                    step = _get_step(step_number, step_option)
+                    url = f"{base_url}/query_range?query={urllib.parse.quote(query_avg)}&start={start_datetime}&end={end_datetime}&step=1m"
+
+                logging.debug(f"Constructed URL: {url}")
+
                 try:
-                    if aggregation_method == 'step':
-                        step = _get_step(step_number, step_option)
-                        url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step={step}"
-                    elif aggregation_method == 'average':
-                        url = f"{base_url}/query_range?query={urllib.parse.quote(query)}&start={start_datetime}&end={end_datetime}&step=1m"
-
-                    logging.debug(f"Constructed URL: {url}")
-
                     df = get_data(url, variables)
 
                     if df.empty:
@@ -296,9 +302,6 @@ data:
                             'data': {},
                         }
                     else:
-                        if aggregation_method == 'average':
-                            df = _resample_and_average(df, step_number, step_option)
-
                         # Apply the station filter if provided
                         if filter_words:
                             df['station_lower'] = df['station'].str.lower()
