@@ -154,8 +154,8 @@ data:
 
         return render_template_string('''
             <form action="/dataresult" method="post">
-                <label for="variables">API AIRECIUDADANO v1.0</label><br>
-                <label for="variables">Instrucciones en aireciudadano.com/api</label><br>
+                <h2>API AIRECIUDADANO v1.0</h2><br>
+                <h3>Instrucciones en aireciudadano.com/api</h3><br>
                 <label for="variables">Select variables:</label><br>
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
