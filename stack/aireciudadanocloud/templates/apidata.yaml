@@ -20,13 +20,12 @@ spec:
             - name: apidata
               mountPath: /config/
           resources:
-            # Ajuste de recursos según sea necesario
             requests:
-              memory: "500Mi"
-              cpu: "300m"
-            limits:
-              memory: "700Mi"
+              memory: "1Gi"
               cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
       volumes:
         - name: apidata
           configMap:
@@ -46,6 +45,40 @@ spec:
       port: 8081
       nodePort: 30001
 ---
+# redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:6.2
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -57,6 +90,7 @@ data:
     pip install requests
     pip install pandas
     pip install numpy
+    pip install redis
     cd /root/
     while ((1))
     do
@@ -71,30 +105,41 @@ data:
     import datetime
     import numpy as np
     import json
+    import redis
+    import hashlib
+    import logging
 
-    # Constants
+    # Conexión a Redis
+    redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
+
+    app = Flask(__name__)
+
     selected_cols = [
         "PM25", "PM25raw", "PM251", "PM252", "PM1", "CO2", "VOC", "NOx",
         "Humidity", "Temperature", "Noise", "NoisePeak", "RSSI", "Latitude",
         "Longitude", "InOut",
     ]
 
-    # Flask application
-    app = Flask(__name__)
-
-    # Get data from API
     def get_data(url, selected_cols):
         try:
+            # Crear una clave hash para almacenar los datos en Redis
+            cache_key = hashlib.md5(url.encode()).hexdigest()
+            
+            # Verificar si los datos ya están en Redis
+            cached_data = redis_client.get(cache_key)
+            if cached_data:
+                return pd.read_json(cached_data)
+
             data = requests.get(url).json()['data']['result']
             df = pd.json_normalize(data)
 
             if 'values' in df.columns:
                 df = df.explode('values')
-                df['date'] = df['values'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
+                df['date'] = pd.to_datetime(df['values'].apply(lambda x: x[0]), unit='s', utc=True)
                 df['value'] = df['values'].apply(lambda x: x[1])
                 df = df.drop(columns="values")
             elif 'value' in df.columns:
-                df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
+                df['date'] = pd.to_datetime(df['value'].apply(lambda x: x[0]), unit='s', utc=True)
                 df['value'] = df['value'].apply(lambda x: x[1])
 
             df = df.rename(columns={
@@ -115,27 +160,27 @@ data:
             if 'Longitude' in df_result.columns:
                 df_result['Longitude'].replace(0, np.nan, inplace=True)
 
+            # Almacenar los datos en Redis
+            redis_client.set(cache_key, df_result.to_json())
+
             return df_result
         except Exception as e:
             app.logger.error(f'Error in get_data: {str(e)}')
             raise
 
-    # Function to get wide table
     def _wide_table(df, selected_cols):
         try:
-            df_result = pd.pivot(df, index=['station', 'date'], columns='metric_name', values='value').reset_index()
+            df_result = df.pivot(index=['station', 'date'], columns='metric_name', values='value').reset_index()
             all_cols = ['station', 'date'] + selected_cols
-            missing_cols = set(all_cols) - set(df_result.columns)
-            for col in missing_cols:
-                df_result[col] = np.nan
+            for col in all_cols:
+                if col not in df_result.columns:
+                    df_result[col] = np.nan
             df_result = df_result[all_cols].reset_index(drop=True)
-            df_result.columns.name = ""
             return df_result
         except Exception as e:
             app.logger.error(f'Pivot Error: {str(e)}')
             raise
 
-    # Constructor of the step value for time range queries
     def _get_step(number, choice):
         options = {"minutes": "m", "hours": "h", "days": "d", "weeks": "w", "years": "y"}
         return f"{number}{options[choice]}"
@@ -221,7 +266,6 @@ data:
         aggregation_method = request.form['aggregation_method']
         station_filter = request.form.get('station_filter', '')
 
-        # Adjust start_datetime to be one hour earlier
         start_datetime = f"{start_date}T{start_time}:00Z"
         start_datetime_adjusted = (datetime.datetime.fromisoformat(start_datetime[:-1]) - datetime.timedelta(hours=1)).isoformat() + 'Z'
         end_datetime = f"{end_date}T{end_time}:00Z"
@@ -261,12 +305,10 @@ data:
 
                 obs = pd.DataFrame(hourly_obs).reset_index(drop=True)
 
-            # Filter the results to ensure dates are within the original specified range
             obs = obs[(obs['date'] >= start_datetime) & (obs['date'] <= end_datetime)]
 
             total_records = obs.shape[0]
 
-            # Convert DataFrame to dictionary and replace NaN with None explicitly
             json_data = obs.to_dict(orient='records')
             for record in json_data:
                 for key, value in record.items():
