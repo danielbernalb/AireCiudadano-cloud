@@ -135,11 +135,11 @@ data:
 
             if 'values' in df.columns:
                 df = df.explode('values')
-                df['date'] = pd.to_datetime(df['values'].apply(lambda x: x[0]), unit='s', utc=True)
+                df['date'] = df['values'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
                 df['value'] = df['values'].apply(lambda x: x[1])
                 df = df.drop(columns="values")
             elif 'value' in df.columns:
-                df['date'] = pd.to_datetime(df['value'].apply(lambda x: x[0]), unit='s', utc=True)
+                df['date'] = df['value'].apply(lambda x: datetime.datetime.utcfromtimestamp(x[0]).isoformat())
                 df['value'] = df['value'].apply(lambda x: x[1])
 
             df = df.rename(columns={
@@ -160,27 +160,27 @@ data:
             if 'Longitude' in df_result.columns:
                 df_result['Longitude'].replace(0, np.nan, inplace=True)
 
-            # Almacenar los datos en Redis
-            redis_client.set(cache_key, df_result.to_json())
-
             return df_result
         except Exception as e:
             app.logger.error(f'Error in get_data: {str(e)}')
             raise
 
+    # Function to get wide table
     def _wide_table(df, selected_cols):
         try:
-            df_result = df.pivot(index=['station', 'date'], columns='metric_name', values='value').reset_index()
+            df_result = pd.pivot(df, index=['station', 'date'], columns='metric_name', values='value').reset_index()
             all_cols = ['station', 'date'] + selected_cols
-            for col in all_cols:
-                if col not in df_result.columns:
-                    df_result[col] = np.nan
+            missing_cols = set(all_cols) - set(df_result.columns)
+            for col in missing_cols:
+                df_result[col] = np.nan
             df_result = df_result[all_cols].reset_index(drop=True)
+            df_result.columns.name = ""
             return df_result
         except Exception as e:
             app.logger.error(f'Pivot Error: {str(e)}')
             raise
 
+    # Constructor of the step value for time range queries
     def _get_step(number, choice):
         options = {"minutes": "m", "hours": "h", "days": "d", "weeks": "w", "years": "y"}
         return f"{number}{options[choice]}"
@@ -266,6 +266,7 @@ data:
         aggregation_method = request.form['aggregation_method']
         station_filter = request.form.get('station_filter', '')
 
+        # Adjust start_datetime to be one hour earlier
         start_datetime = f"{start_date}T{start_time}:00Z"
         start_datetime_adjusted = (datetime.datetime.fromisoformat(start_datetime[:-1]) - datetime.timedelta(hours=1)).isoformat() + 'Z'
         end_datetime = f"{end_date}T{end_time}:00Z"
@@ -305,10 +306,12 @@ data:
 
                 obs = pd.DataFrame(hourly_obs).reset_index(drop=True)
 
+            # Filter the results to ensure dates are within the original specified range
             obs = obs[(obs['date'] >= start_datetime) & (obs['date'] <= end_datetime)]
 
             total_records = obs.shape[0]
 
+            # Convert DataFrame to dictionary and replace NaN with None explicitly
             json_data = obs.to_dict(orient='records')
             for record in json_data:
                 for key, value in record.items():
