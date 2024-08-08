@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 #Your VM Public IPv4 address or Public IPv4 DNS
-publicIP: 88.99.187.134
+publicIP: sensor.aireciudadano.com
 
 #Your Grafana admin password
 grafanaAdminPass: yourgrafanaadminpassword
