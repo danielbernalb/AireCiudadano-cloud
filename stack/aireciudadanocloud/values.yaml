@@ -49,22 +49,22 @@ resources:
       ephemeral-storage: "400Mi"
   prometheus:
     requests:
-      memory: "1.2Gi"
+      memory: "400Mi"
       cpu: "300m"
-      ephemeral-storage: "1.5Gi"
+      ephemeral-storage: "600Mi"
     limits:
-      memory: "1.6Gi"
+      memory: "600Mi"
       cpu: "500m"
-      ephemeral-storage: "1.8Gi"
+      ephemeral-storage: "800Mi"
   grafana:
     requests:
-      memory: "1Gi"
-      cpu: "300m"
-      ephemeral-storage: "1.4Gi"
+      memory: "400Mi"
+      cpu: "200m"
+      ephemeral-storage: "700Mi"
     limits:
-      memory: "1.4Gi"
-      cpu: "700m"
-      ephemeral-storage: "1.8Gi"
+      memory: "700Mi"
+      cpu: "300m"
+      ephemeral-storage: "800Mi"
   apiserver:
     requests:
       memory: "200Mi"
