@@ -215,7 +215,11 @@ data:
                 post_data = self.rfile.read(content_length)
                 params = urllib.parse.parse_qs(post_data.decode('utf-8'))
 
-                variables = params.get('variables', selected_cols)
+                # Parse the selected variables from the form data
+                variables = params.get('variables', [])
+                if not variables:
+                    variables = selected_cols
+
                 start_date = params.get('start_date', ['2024-05-09'])[0]
                 start_time = params.get('start_time', ['08:00'])[0]
                 end_date = params.get('end_date', ['2024-05-09'])[0]
@@ -235,7 +239,7 @@ data:
                 elif aggregation_method == 'average':
                     step = f"avg_over_time({step_number}{step_option})"
 
-                base_url = "http://sensor.aireciudadano.com:30000/api/v1"
+                base_url = "http://194.242.56.226:30000/api/v1"
                 query = '{job%3D"pushgateway"}'
                 url = f"{base_url}/query_range?query={query}&start={start_datetime}&end={end_datetime}&step={step}"
 
