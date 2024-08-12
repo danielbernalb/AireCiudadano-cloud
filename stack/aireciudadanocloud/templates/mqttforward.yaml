@@ -50,43 +50,25 @@ data:
     import requests
     from paho.mqtt import client as mqtt
     import yaml
-    import json
 
     HEADERS = {'X-Requested-With': 'Python requests', 'Content-type': 'text/xml'}
 
-    def pushdata(DATA, URL):
-        try:
-            response = requests.post(url=URL, data=DATA, headers=HEADERS)
-            print(response.content)
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
 
-    def device_update(device_id):
-        print('Send mqtt message')
-        data = {
-            "warning": "",
-            "caution": "",
-            "alarm": "ON",
-            "name": "",
-            "update": "OFF",
-            "factory_reset": "OFF",
-            "FRC": "OFF",
-            "FRC_value": "",
-            "MQTT_server": "",
-            "MQTT_port": "",
-            "ABC": "OFF",
-            "reboot": "ON",
-            "temperature_offset": "",
-            "altitude_compensation": ""
-        }
-        client.publish("config/" + str(device_id), json.dumps(data))
+    def pushdata(DATA, URL):
+      try:
+        #print(DATA)
+        response = requests.post(url=URL, data=DATA,headers=HEADERS)
+        print(response.content)
+      except requests.exceptions.RequestException as e:  # This is the correct syntax
+        raise SystemExit(e)
 
     def on_connect(client, userdata, flags, reason_code, properties):
+        # connect mqtt broker
         client.subscribe([("measurement", 0)])
-
+        
     def on_message(client, userdata, msg):
         payload = msg.payload.decode("utf-8")
-        payload = yaml.safe_load(payload)
+        payload = yaml.safe_load(msg.payload.decode("utf-8"))
 
         device_id = payload.pop('id', None)
         if device_id:
@@ -111,36 +93,21 @@ data:
                   'Var1 ' + str(payload.pop('datavar1', 0)) + '\n' + \
                   'Var2 ' + str(payload.pop('datavar2', 0)) + '\n'
 
-            URL = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
+            URL  = 'http://' + sys.argv[1] + ':9091/metrics/job/' + str(device_id)
             pushdata(msg, URL)
-            
-            # Llamar a device_update con el device_id
-            device_update(device_id)
         else:
-            print('ERROR: Malformed message' + str(payload))
-
-    def on_publish(client, userdata, mid, reason_codes, properties):
-        print("data published \n")
-        pass
-
-    def post(URL, DATA, HEADERS):
-        try:
-            response = requests.post(url=URL, data=DATA, headers=HEADERS)
-            return response.content
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
+            print( 'ERROR: Malformed message' + str(payload))
+        
 
     def main():
-      if len(sys.argv) != 3:
-          print('Usage: ' + sys.argv[0] + ' <pushgateway IP> <mqttbroker IP>. Found ' + str(len(sys.argv) - 1) + ' arguments.')
+      if (len(sys.argv) != 3):
+          print('Usage: '+sys.argv[0]+' <pushgateway IP> <mqttbroker IP>. Found '+len(sys.argv)+' arguments.')
           exit()
-
-      global client
+      
       client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+      client.connect(sys.argv[2], 1883)
       client.on_connect = on_connect
       client.on_message = on_message
-      client.on_publish = on_publish
-      client.connect(sys.argv[2], 1883)
       client.loop_forever()
 
     if __name__ == "__main__":
