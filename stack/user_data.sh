@@ -6,13 +6,13 @@ sudo apt update && sudo apt install -y jq unzip git snapd
 
 #====================VARIABLES==============================
 #export PUBLIC_IP=ip a l enp0s3 | awk '($1=="inet"){split($2,a,"/");print a[1]}'
-export PUBLIC_IP=$(hostname -I)
+export PUBLIC_IP="88.99.187.134"
 export GRAFANA_ADMIN_PASSWORD="daniel2022"
 #===========================================================
 
 #==============Initialize /data if needed===================
 #Ensure there is a directory created for the applications persistent data
-for application in prometheus pushgateway grafana mosquitto letsencrypt
+for application in prometheus pushgateway mosquitto letsencrypt
 do
   if [ ! -d /data/$application ]; then
     sudo mkdir -p /data/$application
@@ -35,7 +35,7 @@ echo "alias helm='microk8s.helm3'" >> $HOME/.bashrc
 
 #================Install anaire cloud stack=================
 cd $HOME
-git clone --branch cambios22NS_20julio2024 https://github.com/danielbernalb/aireciudadano-cloud.git
+git clone --branch cambios22NS_20julio2024_1 https://github.com/danielbernalb/aireciudadano-cloud.git
 ln -s anaire-cloud/stack/virtualbox/delete_stack.sh
 ln -s anaire-cloud/stack/virtualbox/upgrade_stack.sh
 ln -s anaire-cloud/stack/virtualbox/start_stack.sh

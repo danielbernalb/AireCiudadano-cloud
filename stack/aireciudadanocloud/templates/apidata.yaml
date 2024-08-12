@@ -22,11 +22,11 @@ spec:
           resources:
             # Ajuste de recursos según sea necesario
             requests:
-              memory: "500Mi"
-              cpu: "300m"
+              memory: "400Mi"
+              cpu: "200m"
             limits:
-              memory: "700Mi"
-              cpu: "500m"
+              memory: "600Mi"
+              cpu: "400m"
       volumes:
         - name: apidata
           configMap:
@@ -44,7 +44,7 @@ spec:
   ports:
     - protocol: TCP
       port: 8081
-      nodePort: 30001
+      nodePort: 30003
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -209,7 +209,7 @@ data:
     @app.route('/dataresult', methods=['POST'])
     def data():
         variables = request.form.getlist('variables')
-        base_url = "http://194.242.56.226:30000/api/v1"
+        base_url = "http://88.99.187.134:30000/api/v1"
         query = '{job%3D"pushgateway"}'
 
         start_date = request.form['start_date']
