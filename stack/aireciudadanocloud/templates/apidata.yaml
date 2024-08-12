@@ -152,7 +152,7 @@ data:
         station_filter = request.args.get('station_filter', '')
         aggregation_method = request.args.get('aggregation_method', 'step')
 
-        html_form = '''
+        return render_template_string('''
             <form action="/dataresult" method="post">
                 <h2>API AIRECIUDADANO v1.0</h2><br>
                 <h3>Instrucciones en aireciudadano.com/api</h3><br>
@@ -160,36 +160,36 @@ data:
                 <input type="checkbox" id="select_all" onclick="toggle(this);">
                 <label for="select_all">Select/Deselect All</label><br>
                 {% for col in selected_cols %}
-                    <input type="checkbox" id="{{ '{{' }} col }}" name="variables" value="{{ '{{' }} col }}" {% if col in variables %}checked{% endif %}>
-                    <label for="{{ '{{' }} col }}">{{ '{{' }} col }}</label><br>
+                    <input type="checkbox" id="{% raw %}{{ col }}{% endraw %}" name="variables" value="{% raw %}{{ col }}{% endraw %}" {% raw %}{% if col in variables %}checked{% endif %}{% endraw %}>
+                    <label for="{% raw %}{{ col }}{% endraw %}">{% raw %}{{ col }}{% endraw %}</label><br>
                 {% endfor %}
                 <br>
                 <label for="start_date">Start date/time:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ '{{' }} start_date }}">
+                <input type="date" id="start_date" name="start_date" value="{% raw %}{{ start_date }}{% endraw %}">
                 <label for="start_time"> / </label>
-                <input type="time" id="start_time" name="start_time" value="{{ '{{' }} start_time }}" step="3600" list="hour-markers"><br><br>
+                <input type="time" id="start_time" name="start_time" value="{% raw %}{{ start_time }}{% endraw %}" step="3600" list="hour-markers"><br><br>
                 <label for="end_date">End date/time:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ '{{' }} end_date }}">
+                <input type="date" id="end_date" name="end_date" value="{% raw %}{{ end_date }}{% endraw %}">
                 <label for="end_time"> / </label>
-                <input type="time" id="end_time" name="end_time" value="{{ '{{' }} end_time }}" step="3600" list="hour-markers"><br><br>
+                <input type="time" id="end_time" name="end_time" value="{% raw %}{{ end_time }}{% endraw %}" step="3600" list="hour-markers"><br><br>
                 <datalist id="hour-markers">
                     {% for hour in range(24) %}
-                        <option value="{{ '{{' }} '%02d:00'|format(hour) }}"></option>
+                        <option value="{% raw %}{{ '%02d:00'|format(hour) }}{% endraw %}"></option>
                     {% endfor %}
                 </datalist>
                 <label for="aggregation_method">Aggregation method:</label>
                 <select id="aggregation_method" name="aggregation_method">
-                    <option value="step" {% if aggregation_method == 'step' %}selected{% endif %}>Step</option>
-                    <option value="average" {% if aggregation_method == 'average' %}selected{% endif %}>Average</option>
+                    <option value="step" {% raw %}{% if aggregation_method == 'step' %}selected{% endif %}{% endraw %}>Step</option>
+                    <option value="average" {% raw %}{% if aggregation_method == 'average' %}selected{% endif %}{% endraw %}>Average</option>
                 </select><br><br>
                 <label for="step_number">Step/Average number:</label>
-                <input type="number" id="step_number" name="step_number" value="{{ '{{' }} step_number }}">
+                <input type="number" id="step_number" name="step_number" value="{% raw %}{{ step_number }}{% endraw %}">
                 <label for="step_option">Option:</label>
                 <select id="step_option" name="step_option">
-                    <option value="minutes" {% if step_option == 'minutes' %}selected{% endif %}>Minutes</option>
-                    <option value="hours" {% if step_option == 'hours' %}selected{% endif %}>Hours</option>
-                    <option value="days" {% if step_option == 'days' %}selected{% endif %}>Days</option>
-                    <option value="weeks" {% if step_option == 'weeks' %}selected{% endif %}>Weeks</option>
+                    <option value="minutes" {% raw %}{% if step_option == 'minutes' %}selected{% endif %}{% endraw %}>Minutes</option>
+                    <option value="hours" {% raw %}{% if step_option == 'hours' %}selected{% endif %}{% endraw %}>Hours</option>
+                    <option value="days" {% raw %}{% if step_option == 'days' %}selected{% endif %}{% endraw %}>Days</option>
+                    <option value="weeks" {% raw %}{% if step_option == 'weeks' %}selected{% endif %}{% endraw %}>Weeks</option>
                 </select><br><br>
                 <label for="station_filter">Station Filter:</label>
                 <input type="text" id="station_filter" name="station_filter" value=""><br><br>
@@ -203,8 +203,7 @@ data:
                     }
                 }
             </script>
-        '''
-        return render_template_string(html_form, selected_cols=selected_cols, variables=variables, start_date=start_date, start_time=start_time,
+        ''', selected_cols=selected_cols, variables=variables, start_date=start_date, start_time=start_time,
         end_date=end_date, end_time=end_time, step_number=step_number, step_option=step_option, aggregation_method=aggregation_method)
 
     @app.route('/dataresult', methods=['POST'])
