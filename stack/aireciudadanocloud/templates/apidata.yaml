@@ -57,7 +57,7 @@ kind: ConfigMap
 metadata:
   name: apidata-template
 data:
-  form.html: |
+  form.html: |-
     <form action="/dataresult" method="post">
         <h2>API AIRECIUDADANO v1.0</h2><br>
         <h3>Instrucciones en aireciudadano.com/api</h3><br>
