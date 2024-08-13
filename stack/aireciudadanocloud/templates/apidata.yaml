@@ -129,7 +129,7 @@ data:
     done
 
   server.py: |
-    from flask import Flask, request, jsonify, render_template_string
+    from flask import Flask, request, jsonify, render_template
     import requests
     import pandas as pd
     import datetime
@@ -206,26 +206,14 @@ data:
 
     @app.route('/getdata')
     def index():
-        variables = request.args.getlist('variables') or selected_cols
-        start_date = request.args.get('start_date', '2024-05-09')
-        start_time = request.args.get('start_time', '08:00')
-        end_date = request.args.get('end_date', '2024-05-09')
-        end_time = request.args.get('end_time', '10:00')
-        step_number = request.args.get('step_number', '1')
-        step_option = request.args.get('step_option', 'hours')
-        station_filter = request.args.get('station_filter', '')
-        aggregation_method = request.args.get('aggregation_method', 'step')
-
-        return render_template('form.html', 
-                            selected_cols=selected_cols, 
-                            variables=variables, 
-                            start_date=start_date, 
-                            start_time=start_time,
-                            end_date=end_date, 
-                            end_time=end_time, 
-                            step_number=step_number, 
-                            step_option=step_option, 
-                            aggregation_method=aggregation_method)
+        return render_template('form.html',
+                            start_date=request.args.get('start_date', '2024-05-09'),
+                            start_time=request.args.get('start_time', '08:00'),
+                            end_date=request.args.get('end_date', '2024-05-09'),
+                            end_time=request.args.get('end_time', '10:00'),
+                            step_number=request.args.get('step_number', '1'),
+                            step_option=request.args.get('step_option', 'hours'),
+                            aggregation_method=request.args.get('aggregation_method', 'step'))
 
     @app.route('/dataresult', methods=['POST'])
     def data():

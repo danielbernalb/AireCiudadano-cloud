@@ -5,10 +5,55 @@
     <label for="variables">Select variables:</label><br>
     <input type="checkbox" id="select_all" onclick="toggle(this);">
     <label for="select_all">Select/Deselect All</label><br>
-    {% for col in selected_cols %}
-        <input type="checkbox" id="{{ col }}" name="variables" value="{{ col }}" {% if col in variables %}checked{% endif %}>
-        <label for="{{ col }}">{{ col }}</label><br>
-    {% endfor %}
+
+    <input type="checkbox" id="PM25" name="variables" value="PM25">
+    <label for="PM25">PM25</label><br>
+
+    <input type="checkbox" id="PM25raw" name="variables" value="PM25raw">
+    <label for="PM25raw">PM25raw</label><br>
+
+    <input type="checkbox" id="PM251" name="variables" value="PM251">
+    <label for="PM251">PM251</label><br>
+
+    <input type="checkbox" id="PM252" name="variables" value="PM252">
+    <label for="PM252">PM252</label><br>
+
+    <input type="checkbox" id="PM1" name="variables" value="PM1">
+    <label for="PM1">PM1</label><br>
+
+    <input type="checkbox" id="CO2" name="variables" value="CO2">
+    <label for="CO2">CO2</label><br>
+
+    <input type="checkbox" id="VOC" name="variables" value="VOC">
+    <label for="VOC">VOC</label><br>
+
+    <input type="checkbox" id="NOx" name="variables" value="NOx">
+    <label for="NOx">NOx</label><br>
+
+    <input type="checkbox" id="Humidity" name="variables" value="Humidity">
+    <label for="Humidity">Humidity</label><br>
+
+    <input type="checkbox" id="Temperature" name="variables" value="Temperature">
+    <label for="Temperature">Temperature</label><br>
+
+    <input type="checkbox" id="Noise" name="variables" value="Noise">
+    <label for="Noise">Noise</label><br>
+
+    <input type="checkbox" id="NoisePeak" name="variables" value="NoisePeak">
+    <label for="NoisePeak">NoisePeak</label><br>
+
+    <input type="checkbox" id="RSSI" name="variables" value="RSSI">
+    <label for="RSSI">RSSI</label><br>
+
+    <input type="checkbox" id="Latitude" name="variables" value="Latitude">
+    <label for="Latitude">Latitude</label><br>
+
+    <input type="checkbox" id="Longitude" name="variables" value="Longitude">
+    <label for="Longitude">Longitude</label><br>
+
+    <input type="checkbox" id="InOut" name="variables" value="InOut">
+    <label for="InOut">InOut</label><br>
+
     <br>
     <label for="start_date">Start date/time:</label>
     <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
