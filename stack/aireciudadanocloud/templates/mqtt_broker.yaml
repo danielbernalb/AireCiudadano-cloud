@@ -19,8 +19,8 @@ spec:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/
             - name: mqtt-config
-              mountPath: /mosquitto/config/mosquitto.conf
-              subPath: mosquitto.conf
+              mountPath: /mosquitto/config
+              readOnly: true  # Asegurar que sea solo lectura para evitar problemas
           resources:
             {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
@@ -31,16 +31,23 @@ spec:
         - name: mqtt-config
           configMap:
             name: mqttbroker-config
+            items:
+              - key: mosquitto.conf
+                path: mosquitto.conf  # Asegurar que el archivo tenga el nombre correcto
 ---
-kind: ConfigMap
 apiVersion: v1
+kind: ConfigMap
 metadata:
   name: mqttbroker-config
+  labels:
+    app: mqttbroker
 data:
-  datasource.yaml: |
+  mosquitto.conf: |
     persistence true
     persistence_location /mosquitto/data/
     log_dest file /mosquitto/log/mosquitto.log
+    listener 1883
+    allow_anonymous true
 ---
 apiVersion: v1
 kind: Service
@@ -51,6 +58,6 @@ spec:
   selector:
     app: mqttbroker
   ports:
-  - protocol: TCP
-    port: 1883
-    nodePort: 30183
+    - protocol: TCP
+      port: 1883
+      nodePort: 30183
