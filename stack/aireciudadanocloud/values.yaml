@@ -23,20 +23,20 @@ resources:
   mqttbroker:
     requests:
       memory: "100Mi"
-      cpu: "50m"
+      cpu: "80m"
       ephemeral-storage: "150Mi"
     limits:
       memory: "150Mi"
-      cpu: "100m"
+      cpu: "120m"
       ephemeral-storage: "200Mi"
   mqttforward:
     requests:
       memory: "100Mi"
-      cpu: "50m"
+      cpu: "80m"
       ephemeral-storage: "120Mi"
     limits:
       memory: "120Mi"
-      cpu: "100m"
+      cpu: "120m"
       ephemeral-storage: "150Mi"
   pushgateway:
     requests:
@@ -50,7 +50,7 @@ resources:
   prometheus:
     requests:
       memory: "800Mi"
-      cpu: "200m"
+      cpu: "250m"
       ephemeral-storage: "1Gi"
     limits:
       memory: "1Gi"
@@ -58,17 +58,17 @@ resources:
       ephemeral-storage: "1.2Gi"
   grafana:
     requests:
-      memory: "300Mi"
-      cpu: "150m"
+      memory: "400Mi"
+      cpu: "200m"
       ephemeral-storage: "500Mi"
     limits:
-      memory: "500Mi"
-      cpu: "250m"
-      ephemeral-storage: "600Mi"
+      memory: "600Mi"
+      cpu: "300m"
+      ephemeral-storage: "700Mi"
   apiserver:
     requests:
       memory: "100Mi"
-      cpu: "60m"
+      cpu: "80m"
       ephemeral-storage: "150Mi"
     limits:
       memory: "150Mi"
@@ -76,13 +76,13 @@ resources:
       ephemeral-storage: "200Mi"
   cleanercronjob:
     requests:
-      memory: "50Mi"
-      cpu: "50m"
-      ephemeral-storage: "80Mi"
-    limits:
       memory: "100Mi"
       cpu: "100m"
-      ephemeral-storage: "120Mi"
+      ephemeral-storage: "150Mi"
+    limits:
+      memory: "1500Mi"
+      cpu: "150m"
+      ephemeral-storage: "200Mi"
   nginx:
     requests:
       memory: "150Mi"
