@@ -49,30 +49,30 @@ resources:
       ephemeral-storage: "400Mi"
   prometheus:
     requests:
-      memory: "1.2Gi"
-      cpu: "350m"
-      ephemeral-storage: "1.5Gi"
+      memory: "800Mi"
+      cpu: "250m"
+      ephemeral-storage: "800Mi"
     limits:
-      memory: "1.6Gi"
-      cpu: "550m"
-      ephemeral-storage: "1.8Gi"
+      memory: "1Gi"
+      cpu: "450m"
+      ephemeral-storage: "1Gi"
   grafana:
     requests:
-      memory: "1Gi"
-      cpu: "300m"
-      ephemeral-storage: "1.4Gi"
+      memory: "600Mi"
+      cpu: "200m"
+      ephemeral-storage: "800Mi"
     limits:
-      memory: "1.3Gi"
-      cpu: "500m"
-      ephemeral-storage: "1.6Gi"
+      memory: "800Mi"
+      cpu: "300m"
+      ephemeral-storage: "1Gi"
   apiserver:
     requests:
       memory: "200Mi"
-      cpu: "130m"
+      cpu: "100m"
       ephemeral-storage: "300Mi"
     limits:
       memory: "300Mi"
-      cpu: "200m"
+      cpu: "150m"
       ephemeral-storage: "450Mi"
   cleanercronjob:
     requests:
@@ -86,9 +86,9 @@ resources:
   nginx:
     requests:
       memory: "250Mi"
-      cpu: "200m"
+      cpu: "150m"
       ephemeral-storage: "350Mi"
     limits:
       memory: "350Mi"
-      cpu: "300m"
+      cpu: "250m"
       ephemeral-storage: "500Mi"
