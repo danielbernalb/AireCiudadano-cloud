@@ -12,26 +12,20 @@ spec:
       labels:
         app: mqttbroker
     spec:
-      initContainers:
-        - name: init-config
-          image: busybox
-          command: ['sh', '-c', 'cp /tmp/mosquitto.conf /mosquitto/config/ && chmod 644 /mosquitto/config/mosquitto.conf']
-          volumeMounts:
-            - name: mqtt-config-vol
-              mountPath: /tmp/mosquitto.conf
-              subPath: mosquitto.conf
-            - name: mqtt-config-dir
-              mountPath: /mosquitto/config
       containers:
         - name: mqttbroker
           image: eclipse-mosquitto:1.6.15
+          command:
+            - "/usr/sbin/mosquitto"
+            - "-c"
+            - "/etc/mosquitto-config/mosquitto.conf"
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/data
             - name: mqtt-log-volume
               mountPath: /mosquitto/log
-            - name: mqtt-config-dir
-              mountPath: /mosquitto/config
+            - name: mqtt-config
+              mountPath: /etc/mosquitto-config
           resources:
             {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
@@ -43,11 +37,9 @@ spec:
           hostPath:
             path: /data/mosquitto/log
             type: DirectoryOrCreate
-        - name: mqtt-config-vol
+        - name: mqtt-config
           configMap:
             name: mqttbroker-config
-        - name: mqtt-config-dir
-          emptyDir: {}
 ---
 kind: ConfigMap
 apiVersion: v1
