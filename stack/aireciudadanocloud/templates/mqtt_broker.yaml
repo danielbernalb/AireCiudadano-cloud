@@ -17,30 +17,31 @@ spec:
           image: eclipse-mosquitto:1.6.15
           volumeMounts:
             - name: mqtt-storage-volume
-              mountPath: /mosquitto/
+              mountPath: /mosquitto/data
+            - name: mqtt-log-volume
+              mountPath: /mosquitto/log
             - name: mqtt-config
-              mountPath: /mosquitto/config
-              readOnly: true  # Asegurar que sea solo lectura para evitar problemas
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
           resources:
             {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
         - name: mqtt-storage-volume
           hostPath:
-            path: /data/mosquitto
-            type: Directory
+            path: /data/mosquitto/data
+            type: DirectoryOrCreate
+        - name: mqtt-log-volume
+          hostPath:
+            path: /data/mosquitto/log
+            type: DirectoryOrCreate
         - name: mqtt-config
           configMap:
             name: mqttbroker-config
-            items:
-              - key: mosquitto.conf
-                path: mosquitto.conf  # Asegurar que el archivo tenga el nombre correcto
 ---
-apiVersion: v1
 kind: ConfigMap
+apiVersion: v1
 metadata:
   name: mqttbroker-config
-  labels:
-    app: mqttbroker
 data:
   mosquitto.conf: |
     persistence true
