@@ -18,14 +18,15 @@ spec:
           command:
             - "/usr/sbin/mosquitto"
             - "-c"
-            - "/etc/mosquitto-config/mosquitto.conf"
+            - "/mosquitto/config/mosquitto.conf"
           volumeMounts:
             - name: mqtt-storage-volume
               mountPath: /mosquitto/data
             - name: mqtt-log-volume
               mountPath: /mosquitto/log
             - name: mqtt-config
-              mountPath: /etc/mosquitto-config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
           resources:
             {{- toYaml .Values.resources.mqttbroker | nindent 12 }}
       volumes:
