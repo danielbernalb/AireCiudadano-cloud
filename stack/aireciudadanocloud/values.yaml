@@ -22,73 +22,57 @@ smtp_from: your sender name
 resources:
   mqttbroker:
     requests:
-      memory: "100Mi"
-      cpu: "80m"
-      ephemeral-storage: "150Mi"
-    limits:
-      memory: "150Mi"
-      cpu: "120m"
-      ephemeral-storage: "200Mi"
-  mqttforward:
-    requests:
-      memory: "100Mi"
-      cpu: "80m"
-      ephemeral-storage: "120Mi"
-    limits:
-      memory: "120Mi"
-      cpu: "120m"
-      ephemeral-storage: "150Mi"
-  pushgateway:
-    requests:
-      memory: "150Mi"
-      cpu: "100m"
-      ephemeral-storage: "200Mi"
-    limits:
       memory: "200Mi"
       cpu: "120m"
-      ephemeral-storage: "250Mi"
+    limits:
+      memory: "250Mi"
+      cpu: "200m"
+  mqttforward:
+    requests:
+      memory: "150Mi"
+      cpu: "120m"
+    limits:
+      memory: "180Mi"
+      cpu: "150m"
+  pushgateway:
+    requests:
+      memory: "120Mi"
+      cpu: "150m"
+    limits:
+      memory: "150Mi"
+      cpu: "180m"
   prometheus:
     requests:
-      memory: "800Mi"
-      cpu: "250m"
-      ephemeral-storage: "1Gi"
-    limits:
       memory: "1Gi"
-      cpu: "400m"
-      ephemeral-storage: "1.2Gi"
+      cpu: "300m"
+    limits:
+      memory: "1.5Gi"
+      cpu: "500m"
   grafana:
     requests:
       memory: "400Mi"
       cpu: "200m"
-      ephemeral-storage: "500Mi"
     limits:
-      memory: "600Mi"
-      cpu: "300m"
-      ephemeral-storage: "700Mi"
+      memory: "500Mi"
+      cpu: "250m"
   apiserver:
     requests:
       memory: "100Mi"
       cpu: "80m"
-      ephemeral-storage: "150Mi"
     limits:
       memory: "150Mi"
       cpu: "100m"
-      ephemeral-storage: "200Mi"
   cleanercronjob:
     requests:
-      memory: "120Mi"
-      cpu: "120m"
-      ephemeral-storage: "150Mi"
-    limits:
-      memory: "1500Mi"
+      memory: "100Mi"
       cpu: "150m"
-      ephemeral-storage: "200Mi"
+    limits:
+      memory: "120Mi"
+      cpu: "200m"
   nginx:
     requests:
       memory: "150Mi"
       cpu: "100m"
-      ephemeral-storage: "150Mi"
     limits:
       memory: "200Mi"
-      cpu: "150m"
-      ephemeral-storage: "250Mi"
+      cpu: "250m"
